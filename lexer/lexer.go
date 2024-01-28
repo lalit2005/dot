@@ -1,0 +1,92 @@
+package lexer
+
+import (
+	"dot/token"
+)
+
+type Lexer struct {
+	input           string
+	currentPosition int
+	peekPosition    int
+	currentChar     byte
+	peekChar        byte
+}
+
+func (l *Lexer) NextToken() token.Token {
+	l.skipWhitespace()
+	var tok token.Token
+	switch l.currentChar {
+	case '+':
+		tok = newToken(token.PLUS, l.currentChar)
+	case '-':
+		tok = newToken(token.MINUS, l.currentChar)
+	case '/':
+		tok = newToken(token.SLASH, l.currentChar)
+	case '*':
+		tok = newToken(token.ASTERISK, l.currentChar)
+	case '=':
+		tok = newToken(token.ASSIGN, l.currentChar)
+	case ';':
+		tok = newToken(token.SEMICOLON, l.currentChar)
+	case '"':
+		l.readChar()
+		initialPosition := l.currentPosition
+		for {
+			if l.currentChar == '"' || l.currentChar == 0 {
+				break
+			}
+			l.readChar()
+		}
+		tok = token.Token{Type: token.STRING, Literal: l.input[initialPosition:l.currentPosition]}
+	case 0:
+		tok = token.Token{Type: token.EOF, Literal: ""}
+	default:
+		if isAlphabet(l.currentChar) {
+			initialPosition := l.currentPosition
+			for isAlphabet(l.currentChar) {
+				l.readChar()
+			}
+			sequence := l.input[initialPosition:l.currentPosition]
+			tokType, ok := token.Keywords[sequence]
+			if !ok {
+				return token.Token{Type: token.IDENTIFIER, Literal: sequence}
+			} else {
+				return token.Token{Type: tokType, Literal: sequence}
+			}
+		} else {
+			tok = newToken(token.UNKNOWN, l.currentChar)
+		}
+	}
+	l.readChar()
+	return tok
+}
+
+func NewLexer(input string) *Lexer {
+	lexer := &Lexer{
+		input:           input,
+		currentPosition: 0,
+		peekPosition:    0,
+		currentChar:     input[0],
+		peekChar:        0,
+	}
+	if len(input) > 1 {
+		lexer.peekChar = input[1]
+		lexer.peekPosition = 1
+	}
+	return lexer
+}
+
+func (l *Lexer) readChar() {
+	l.currentPosition = l.peekPosition
+	if l.peekPosition > len(l.input)-1 {
+		l.currentChar = 0
+	} else {
+		l.currentChar = l.input[l.peekPosition]
+	}
+	l.peekPosition += 1
+	if l.peekPosition > len(l.input)-1 {
+		l.peekChar = 0
+	} else {
+		l.peekChar = l.input[l.peekPosition]
+	}
+}
