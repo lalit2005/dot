@@ -9,6 +9,13 @@ func isAlphabet(ch byte) bool {
 	return false
 }
 
+func isDigit(ch byte) bool {
+	if '0' <= ch && ch <= '9' {
+		return true
+	}
+	return false
+}
+
 func newToken(tokenType token.TokenType, ch byte) token.Token {
 	literal := string(ch)
 	return token.Token{Type: tokenType, Literal: literal}

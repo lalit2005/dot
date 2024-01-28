@@ -24,10 +24,42 @@ func (l *Lexer) NextToken() token.Token {
 		tok = newToken(token.SLASH, l.currentChar)
 	case '*':
 		tok = newToken(token.ASTERISK, l.currentChar)
-	case '=':
-		tok = newToken(token.ASSIGN, l.currentChar)
 	case ';':
 		tok = newToken(token.SEMICOLON, l.currentChar)
+	case ',':
+		tok = newToken(token.COMMA, l.currentChar)
+	case '(':
+		tok = newToken(token.LPAREN, l.currentChar)
+	case ')':
+		tok = newToken(token.RPAREN, l.currentChar)
+	case '{':
+		tok = newToken(token.LBRACE, l.currentChar)
+	case '}':
+		tok = newToken(token.RBRACE, l.currentChar)
+	case '[':
+		tok = newToken(token.LBRACKET, l.currentChar)
+	case ']':
+		tok = newToken(token.RBRACKET, l.currentChar)
+	case ':':
+		tok = newToken(token.COLON, l.currentChar)
+	case '=':
+		if l.peekChar == '=' {
+			l.readChar()
+			l.readChar()
+			return token.Token{Type: token.EQUAL, Literal: "=="}
+		}
+		tok = newToken(token.ASSIGN, l.currentChar)
+	case '!':
+		if l.peekChar == '=' {
+			l.readChar()
+			l.readChar()
+			return token.Token{Type: token.NOT_EQUAL, Literal: "!="}
+		}
+		tok = newToken(token.BANG, l.currentChar)
+	case '<':
+		tok = newToken(token.LT, l.currentChar)
+	case '>':
+		tok = newToken(token.GT, l.currentChar)
 	case '"':
 		l.readChar()
 		initialPosition := l.currentPosition
@@ -50,6 +82,18 @@ func (l *Lexer) NextToken() token.Token {
 			tokType, ok := token.Keywords[sequence]
 			if !ok {
 				return token.Token{Type: token.IDENTIFIER, Literal: sequence}
+			} else {
+				return token.Token{Type: tokType, Literal: sequence}
+			}
+		} else if isDigit(l.currentChar) {
+			initialPosition := l.currentPosition
+			for isDigit(l.currentChar) {
+				l.readChar()
+			}
+			sequence := l.input[initialPosition:l.currentPosition]
+			tokType, ok := token.Keywords[sequence]
+			if !ok {
+				return token.Token{Type: token.INTEGER, Literal: sequence}
 			} else {
 				return token.Token{Type: tokType, Literal: sequence}
 			}

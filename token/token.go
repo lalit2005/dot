@@ -9,9 +9,11 @@ const (
 	FALSE      = "FALSE"
 	LET        = "LET"
 	IF         = "IF"
+	ELSE       = "ELSE"
 	EOF        = "EOF"
 	FUNCTION   = "FUNCTION"
 	STRING     = "STRING"
+	RETURN     = "RETURN"
 
 	PLUS      = "+"
 	MINUS     = "-"
@@ -25,6 +27,13 @@ const (
 	LBRACE    = "{"
 	RBRACE    = "}"
 	SEMICOLON = ";"
+	COMMA     = ","
+	LT        = "<"
+	GT        = ">"
+	BANG      = "!"
+	COLON     = ":"
+	LBRACKET  = "["
+	RBRACKET  = "]"
 
 	UNKNOWN = "UNKNOWN"
 )
@@ -35,9 +44,11 @@ type Token struct {
 }
 
 var Keywords = map[string]TokenType{
-	"fn":    FUNCTION,
-	"true":  TRUE,
-	"false": FALSE,
-	"let":   LET,
-	"if":    IF,
+	"fn":     FUNCTION,
+	"true":   TRUE,
+	"false":  FALSE,
+	"let":    LET,
+	"if":     IF,
+	"return": RETURN,
+	"else":   ELSE,
 }
