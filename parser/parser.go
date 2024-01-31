@@ -104,6 +104,7 @@ func (p *Parser) parseExpressionStatement() *ast.ExpressionStatement {
 
 func (p *Parser) parseReturnStatement() *ast.ReturnStatement {
 	p.nextToken()
+	// the current token is expression's starting token
 	value := p.parseExpression(LOWEST)
 	return &ast.ReturnStatement{
 		ReturnValue: value,
@@ -147,26 +148,13 @@ func (p *Parser) parseLetStatement() *ast.LetStatement {
 }
 
 func (p *Parser) parseExpression(pr int) ast.Expression {
-	// l.Printf("parseExpression")
 	prefix := p.prefixParsers[p.currentToken.Type]
-	// l.Printf("prefix: %+v", prefix)
 	if prefix == nil {
-		p.newError(fmt.Sprintf("no prefix parse function for %s found", p.currentToken.Type))
+		p.newError(fmt.Sprintf("no prefix parser for %s found", p.currentToken.Type))
 		return nil
 	}
-
-	leftExpresssion := prefix()
-	p.nextToken()
-	for p.peekToken.Type != token.SEMICOLON && pr < priority[p.peekToken.Type] {
-		infix := p.infixParsers[p.currentToken.Type]
-		// l.Printf("infix: %+v", infix)
-		if infix == nil {
-			return leftExpresssion
-		}
-		p.nextToken()
-		leftExpresssion = infix(leftExpresssion)
-	}
-	return leftExpresssion
+	leftExpression := prefix()
+	return leftExpression
 }
 
 func (p *Parser) parsePrefixExpression() ast.Expression {

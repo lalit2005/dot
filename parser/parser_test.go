@@ -31,10 +31,10 @@ func TestLetStatement(t *testing.T) {
 		t.Logf("%+v", stmts)
 		stmt := stmts.Statements[0].(*ast.LetStatement)
 		if stmt.Identifier.Value != tt.expectedIdentifier {
-			t.Fatalf("wrong identifier. got=%q. want=%q", stmt.Identifier.Value, tt.expectedIdentifier)
+			t.Fatalf("wrong identifier. got=%+v. want=%+v", stmt.Identifier.Value, tt.expectedIdentifier)
 		}
 		if stmt.Value != tt.expectedValue {
-			t.Fatalf("wrong value. got=%q. want=%q", stmt.Value, tt.expectedValue)
+			t.Fatalf("wrong value. got=%+v. want=%+v", stmt.Value, tt.expectedValue)
 		}
 	}
 }
@@ -67,7 +67,7 @@ func TestReturnStatements(t *testing.T) {
 			t.Fatalf("stmt not *ast.returnStatement. got=%T", stmt)
 		}
 		if returnStmt.ReturnValue != tt.expectedValue {
-			t.Fatalf("returnStmt.ReturnValue not %q, got %q", tt.expectedValue,
+			t.Fatalf("returnStmt.ReturnValue not %+v, got %+v", tt.expectedValue,
 				returnStmt.ReturnValue)
 		}
 	}
@@ -77,12 +77,12 @@ func TestParsingPrefixExpressions(t *testing.T) {
 	prefixTests := []struct {
 		input    string
 		operator string
-		value    int64
+		value    interface{}
 	}{
 		{"!5;", "!", 5},
 		{"-15;", "-", 15},
-		// {"!foobar;", "!", "foobar"},
-		// {"-foobar;", "-", "foobar"},
+		{"!foobar;", "!", "foobar"},
+		{"-foobar;", "-", "foobar"},
 		// {"!true;", "!", true},
 		// {"!false;", "!", false},
 	}
