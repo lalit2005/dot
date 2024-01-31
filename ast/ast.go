@@ -1,12 +1,6 @@
 package ast
 
-import (
-	"dot/token"
-)
-
-type Node interface {
-	// String()
-}
+type Node interface{}
 
 type Expression interface {
 	expressionNode()
@@ -18,17 +12,17 @@ type Statement interface {
 	Node
 }
 
-type ExpressionStatement interface {
-	expressionStatement()
-	Node
+type ExpressionStatement struct {
+	Expression Expression
 }
+
+func (e *ExpressionStatement) statementNode() {}
 
 type Program struct {
 	Statements []Statement
 }
 
 type Integer struct {
-	Token token.Token
 	Value int64
 }
 
@@ -60,7 +54,7 @@ type ReturnStatement struct {
 func (r *ReturnStatement) statementNode() {}
 
 type PrefixExpression struct {
-	Operator token.Token
+	Operator string
 	Right    Expression
 }
 
