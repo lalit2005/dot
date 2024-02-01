@@ -21,3 +21,17 @@ func (p *Parser) registerInfix(tokenType token.TokenType, fn infixParser) {
 func (p *Parser) newError(error string) {
 	p.errors = append(p.errors, error)
 }
+
+func (p *Parser) peekPrecedence() int {
+	if precedence, ok := priority[p.peekToken.Type]; ok {
+		return precedence
+	}
+	return LOWEST
+}
+
+func (p *Parser) currentPrecedence() int {
+	if precedence, ok := priority[p.currentToken.Type]; ok {
+		return precedence
+	}
+	return LOWEST
+}

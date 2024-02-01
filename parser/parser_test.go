@@ -12,6 +12,70 @@ func newParser(input string) *Parser {
 	return p
 }
 
+func testLiteralExpression(
+	t *testing.T,
+	exp ast.Expression,
+	expected interface{},
+) bool {
+	switch v := expected.(type) {
+	case int:
+		return testIntegerLiteral(t, exp, int64(v))
+	case int64:
+		return testIntegerLiteral(t, exp, v)
+	case string:
+		return testIdentifier(t, exp, v)
+	case bool:
+		return testBooleanLiteral(t, exp, v)
+	}
+	t.Errorf("type of exp not handled. got=%T", exp)
+	return false
+}
+
+func testIntegerLiteral(t *testing.T, il ast.Expression, value int64) bool {
+	integ, ok := il.(*ast.Integer)
+	if !ok {
+		t.Errorf("il not *ast.IntegerLiteral. got=%T", il)
+		return false
+	}
+
+	if integ.Value != value {
+		t.Errorf("integ.Value not %d. got=%d", value, integ.Value)
+		return false
+	}
+
+	return true
+}
+
+func testIdentifier(t *testing.T, exp ast.Expression, value string) bool {
+	ident, ok := exp.(*ast.Identifier)
+	if !ok {
+		t.Errorf("exp not *ast.Identifier. got=%T", exp)
+		return false
+	}
+
+	if ident.Value != value {
+		t.Errorf("ident.Value not %s. got=%s", value, ident.Value)
+		return false
+	}
+
+	return true
+}
+
+func testBooleanLiteral(t *testing.T, exp ast.Expression, value bool) bool {
+	bo, ok := exp.(*ast.Boolean)
+	if !ok {
+		t.Errorf("exp not *ast.Boolean. got=%T", exp)
+		return false
+	}
+
+	if bo.Value != value {
+		t.Errorf("bo.Value not %t. got=%t", value, bo.Value)
+		return false
+	}
+
+	return true
+}
+
 func TestLetStatement(t *testing.T) {
 	tests := []struct {
 		input              string
@@ -161,66 +225,154 @@ func TestParsingInfixExpressions(t *testing.T) {
 	}
 }
 
-func testLiteralExpression(
-	t *testing.T,
-	exp ast.Expression,
-	expected interface{},
-) bool {
-	switch v := expected.(type) {
-	case int:
-		return testIntegerLiteral(t, exp, int64(v))
-	case int64:
-		return testIntegerLiteral(t, exp, v)
-	case string:
-		return testIdentifier(t, exp, v)
-	case bool:
-		return testBooleanLiteral(t, exp, v)
+func TestOperatorPrecedenceParsing(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected string
+	}{
+		// 0
+		{
+			"-a * b;",
+			"((-a) * b)",
+		},
+		// 1
+		{
+			"!-a;",
+			"(!(-a))",
+		},
+		// 2
+		{
+			"a + b + c;",
+			"((a + b) + c)",
+		},
+		// 3
+		{
+			"a + b - c;",
+			"((a + b) - c)",
+		},
+		// 4
+		{
+			"a * b * c;",
+			"((a * b) * c)",
+		},
+		// 5
+		{
+			"a * b / c;",
+			"((a * b) / c)",
+		},
+		// 6
+		{
+			"a + b / c;",
+			"(a + (b / c))",
+		},
+		// 7
+		{
+			"a + b * c + d / e - f;",
+			"(((a + (b * c)) + (d / e)) - f)",
+		},
+		// 8
+		{
+			"3 + 4; -5 * 5;",
+			"(3 + 4)((-5) * 5)",
+		},
+		// 9
+		{
+			"5 > 4 == 3 < 4;",
+			"((5 > 4) == (3 < 4))",
+		},
+		// 10
+		{
+			"5 < 4 != 3 > 4;",
+			"((5 < 4) != (3 > 4))",
+		},
+		// 11
+		{
+			"3 + 4 * 5 == 3 * 1 + 4 * 5;",
+			"((3 + (4 * 5)) == ((3 * 1) + (4 * 5)))",
+		},
+		// 12
+		{
+			"true;",
+			"true",
+		},
+		// 13
+		{
+			"false;",
+			"false",
+		},
+		// 14
+		{
+			"3 > 5 == false;",
+			"((3 > 5) == false)",
+		},
+		// 15
+		{
+			"3 < 5 == true;",
+			"((3 < 5) == true)",
+		},
+		// 16
+		{
+			"1 + (2 + 3) + 4;5+5",
+			"((1 + (2 + 3)) + 4)(5 + 5)",
+		},
+		// 17
+		{
+			"(5 + 5) * 2;",
+			"((5 + 5) * 2)",
+		},
+		// 18
+		{
+			"2 / (5 + 5);",
+			"(2 / (5 + 5))",
+		},
+		// 19
+		{
+			"(5 + 5) * 2 * (5 + 5);",
+			"(((5 + 5) * 2) * (5 + 5))",
+		},
+		// 20
+		{
+			"-(5 + 5);",
+			"(-(5 + 5))",
+		},
+		// 21
+		{
+			"!(true == true);",
+			"(!(true == true))",
+		},
+		// {
+		// 	"a + add(b * c) + d;",
+		// 	"((a + add((b * c))) + d)",
+		// },
+		// {
+		// 	"add(a, b, 1, 2 * 3, 4 + 5, add(6, 7 * 8));",
+		// 	"add(a, b, 1, (2 * 3), (4 + 5), add(6, (7 * 8)))",
+		// },
+		// {
+		// 	"add(a + b + c * d / f + g);",
+		// 	"add((((a + b) + ((c * d) / f)) + g))",
+		// },
+		// {
+		// 	"a * [1, 2, 3, 4][b * c] * d;",
+		// 	"((a * ([1, 2, 3, 4][(b * c)])) * d)",
+		// },
+		// {
+		// 	"add(a * b[2], b[1], 2 * [1, 2][1]);",
+		// 	"add((a * (b[2])), (b[1]), (2 * ([1, 2][1])))",
+		// },
 	}
-	t.Errorf("type of exp not handled. got=%T", exp)
-	return false
-}
 
-func testIntegerLiteral(t *testing.T, il ast.Expression, value int64) bool {
-	integ, ok := il.(*ast.Integer)
-	if !ok {
-		t.Errorf("il not *ast.IntegerLiteral. got=%T", il)
-		return false
+	for i, tt := range tests {
+		p := newParser(tt.input)
+		program := p.ParseProgram()
+		for _, e := range p.errors {
+			t.Errorf("tests[%d] PARSER ERROR: "+e, i)
+		}
+		actual := program.String()
+		if actual != tt.expected {
+			t.Errorf("tests[%d] expected=%q, got=%q", i, tt.expected, actual)
+		} else {
+			t.Logf("tests[%d] success", i)
+		}
 	}
-
-	if integ.Value != value {
-		t.Errorf("integ.Value not %d. got=%d", value, integ.Value)
-		return false
-	}
-
-	return true
-}
-
-func testIdentifier(t *testing.T, exp ast.Expression, value string) bool {
-	ident, ok := exp.(*ast.Identifier)
-	if !ok {
-		t.Errorf("exp not *ast.Identifier. got=%T", exp)
-		return false
-	}
-
-	if ident.Value != value {
-		t.Errorf("ident.Value not %s. got=%s", value, ident.Value)
-		return false
-	}
-
-	return true
-}
-
-func testBooleanLiteral(t *testing.T, exp ast.Expression, value bool) bool {
-	bo, ok := exp.(*ast.Boolean)
-	if !ok {
-		t.Errorf("exp not *ast.Boolean. got=%T", exp)
-		return false
-	}
-
-	if bo.Value != value {
-		t.Errorf("bo.Value not %t. got=%t", value, bo.Value)
-		return false
-	}
-
-	return true
 }
