@@ -59,3 +59,11 @@ type PrefixExpression struct {
 }
 
 func (i PrefixExpression) expressionNode() {}
+
+type InfixExpression struct {
+	Left     Expression
+	Operator string
+	Right    Expression
+}
+
+func (i InfixExpression) expressionNode() {}

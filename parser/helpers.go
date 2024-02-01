@@ -4,6 +4,12 @@ import (
 	"dot/token"
 )
 
+func (p *Parser) nextToken() token.Token {
+	p.currentToken = p.peekToken
+	p.peekToken = p.lexer.NextToken()
+	return p.currentToken
+}
+
 func (p *Parser) registerPrefix(tokenType token.TokenType, fn prefixParser) {
 	p.prefixParsers[tokenType] = fn
 }

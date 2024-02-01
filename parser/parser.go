@@ -4,12 +4,8 @@ import (
 	"dot/ast"
 	"dot/lexer"
 	"dot/token"
-	"fmt"
-	"log"
 	"strconv"
 )
-
-var l = log.Default()
 
 const (
 	_ = iota
@@ -38,48 +34,87 @@ type (
 )
 
 var priority = map[token.TokenType]int{
-	token.EQUAL:    EQUALS,
-	token.LT:       LESSGREATER,
-	token.GT:       LESSGREATER,
-	token.PLUS:     SUM,
-	token.MINUS:    SUM,
-	token.ASTERISK: PRODUCT,
-	token.SLASH:    PRODUCT,
-	token.BANG:     PREFIX,
+	token.EQUAL:     EQUALS,
+	token.NOT_EQUAL: EQUALS,
+	token.LT:        LESSGREATER,
+	token.GT:        LESSGREATER,
+	token.PLUS:      SUM,
+	token.MINUS:     SUM,
+	token.ASTERISK:  PRODUCT,
+	token.SLASH:     PRODUCT,
 }
 
 func NewParser(lexer *lexer.Lexer) *Parser {
-	p := &Parser{
-		lexer:        lexer,
-		currentToken: lexer.NextToken(),
-		peekToken:    lexer.NextToken(),
+	parser := &Parser{
+		lexer:         lexer,
+		currentToken:  lexer.NextToken(),
+		peekToken:     lexer.NextToken(),
+		errors:        []string{},
+		prefixParsers: make(map[token.TokenType]prefixParser),
+		infixParsers:  make(map[token.TokenType]infixParser),
 	}
-	p.prefixParsers = make(map[token.TokenType]prefixParser)
-	p.registerPrefix(token.INTEGER, p.parseInteger)
-	p.registerPrefix(token.IDENTIFIER, p.parseIdentifier)
-	p.registerPrefix(token.BANG, p.parsePrefixExpression)
-	p.registerPrefix(token.MINUS, p.parsePrefixExpression)
 
-	p.infixParsers = make(map[token.TokenType]infixParser)
-	return p
+	parser.registerPrefix(token.BANG, parser.parsePrefixExpression)
+	parser.registerPrefix(token.MINUS, parser.parsePrefixExpression)
+	parser.registerPrefix(token.TRUE, parser.parseBoolean)
+	parser.registerPrefix(token.FALSE, parser.parseBoolean)
+	parser.registerPrefix(token.IDENTIFIER, parser.parseIdentifier)
+	parser.registerPrefix(token.INTEGER, parser.parseInteger)
+
+	parser.registerInfix(token.PLUS, parser.parseInfixExpression)
+	parser.registerInfix(token.MINUS, parser.parseInfixExpression)
+	parser.registerInfix(token.ASTERISK, parser.parseInfixExpression)
+	parser.registerInfix(token.SLASH, parser.parseInfixExpression)
+	parser.registerInfix(token.LT, parser.parseInfixExpression)
+	parser.registerInfix(token.GT, parser.parseInfixExpression)
+	parser.registerInfix(token.NOT_EQUAL, parser.parseInfixExpression)
+	parser.registerInfix(token.EQUAL, parser.parseInfixExpression)
+
+	return parser
 }
 
 func (p *Parser) ParseProgram() *ast.Program {
-	program := &ast.Program{}
+	program := &ast.Program{
+		Statements: []ast.Statement{},
+	}
 	for p.currentToken.Type != token.EOF {
-		stmt := p.parseStatement()
-		program.Statements = append(program.Statements, stmt)
+		statement := p.parseStatement()
+		program.Statements = append(program.Statements, statement)
 		p.nextToken()
 	}
-	// l.Printf("stmt 0: %+v", program.Statements[0])
-	// l.Printf("stmt 1: %+v", program.Statements[1])
 	return program
 }
 
-func (p *Parser) nextToken() token.Token {
-	p.currentToken = p.peekToken
-	p.peekToken = p.lexer.NextToken()
-	return p.currentToken
+func (p *Parser) parsePrefixExpression() ast.Expression {
+	expression := &ast.PrefixExpression{
+		Operator: p.currentToken.Literal,
+	}
+	p.nextToken()
+	expression.Right = p.parseExpression(PREFIX)
+	return expression
+}
+
+func (p *Parser) parseExpression(precedence int) ast.Expression {
+	prefix := p.prefixParsers[p.currentToken.Type]
+	if prefix == nil {
+		p.newError("no prefix parser for " + string(p.currentToken.Type))
+		return nil
+	}
+	leftExpression := prefix()
+	for p.peekToken.Type != token.SEMICOLON && precedence < priority[p.peekToken.Type] {
+		infix := p.infixParsers[p.peekToken.Type]
+		if infix == nil {
+			return leftExpression
+		}
+		p.nextToken()
+		leftExpression = infix(leftExpression)
+	}
+	if p.peekToken.Type == token.SEMICOLON {
+		p.nextToken()
+		return leftExpression
+	}
+	p.nextToken()
+	return leftExpression
 }
 
 func (p *Parser) parseStatement() ast.Statement {
@@ -89,12 +124,18 @@ func (p *Parser) parseStatement() ast.Statement {
 	case token.RETURN:
 		return p.parseReturnStatement()
 	default:
-		// l.Printf("parseExpressionStatement")
 		return p.parseExpressionStatement()
 	}
 }
 
-func (p *Parser) parseExpressionStatement() *ast.ExpressionStatement {
+func (p *Parser) parseReturnStatement() ast.Statement {
+	p.nextToken()
+	return &ast.ReturnStatement{
+		ReturnValue: p.parseExpression(LOWEST),
+	}
+}
+
+func (p *Parser) parseExpressionStatement() ast.Statement {
 	expression := p.parseExpression(LOWEST)
 	if p.peekToken.Type == token.SEMICOLON {
 		p.nextToken()
@@ -102,66 +143,52 @@ func (p *Parser) parseExpressionStatement() *ast.ExpressionStatement {
 	return &ast.ExpressionStatement{Expression: expression}
 }
 
-func (p *Parser) parseReturnStatement() *ast.ReturnStatement {
-	p.nextToken()
-	// the current token is expression's starting token
-	value := p.parseExpression(LOWEST)
-	return &ast.ReturnStatement{
-		ReturnValue: value,
-	}
-}
-
-func (p *Parser) parseInteger() ast.Expression {
-	value, err := strconv.ParseInt(p.currentToken.Literal, 0, 64)
-	if err != nil {
-		p.newError(fmt.Sprintf("could not parse %q as integer", p.currentToken.Literal))
+func (p *Parser) parseLetStatement() *ast.LetStatement {
+	if p.peekToken.Type != token.IDENTIFIER {
+		p.newError("expected identifier after let")
 		return nil
 	}
-	return &ast.Integer{
-		Value: value,
+	identifier := ast.Identifier{Value: p.nextToken().Literal}
+	if p.peekToken.Type != token.ASSIGN {
+		p.newError("expected = after identifier")
+		return nil
 	}
+	p.nextToken()
+	p.nextToken()
+	value := p.parseExpression(LOWEST)
+	if p.peekToken.Type == token.SEMICOLON {
+		p.nextToken()
+	}
+	return &ast.LetStatement{Identifier: identifier, Value: value}
 }
 
 func (p *Parser) parseIdentifier() ast.Expression {
 	return &ast.Identifier{Value: p.currentToken.Literal}
 }
 
-func (p *Parser) parseLetStatement() *ast.LetStatement {
-	// current token is LET
-	if p.peekToken.Type != token.IDENTIFIER {
-		p.newError(fmt.Sprintf("expected next token to be IDENTIFIER, got %s instead", p.peekToken.Type))
+func (p *Parser) parseInteger() ast.Expression {
+	value, err := strconv.ParseInt(p.currentToken.Literal, 0, 64)
+	if err != nil {
+		p.newError("could not parse " + p.currentToken.Literal + " as integer")
 		return nil
 	}
-	identToken := p.nextToken()
-	if p.peekToken.Type != token.ASSIGN {
-		p.newError(fmt.Sprintf("expected next token to be ASSIGN, got %s instead", p.peekToken.Type))
-		return nil
-	}
-	p.nextToken()
-	p.nextToken()
-	// current token is the starting of expression
-	// l.Printf("parseLetStatement currentToken: %+v", p.currentToken)
-	identNode := ast.Identifier{Value: identToken.Literal}
-	valueNode := p.parseExpression(LOWEST)
-	stmt := &ast.LetStatement{Identifier: identNode, Value: valueNode}
-	return stmt
+	return &ast.Integer{Value: value}
 }
 
-func (p *Parser) parseExpression(pr int) ast.Expression {
-	prefix := p.prefixParsers[p.currentToken.Type]
-	if prefix == nil {
-		p.newError(fmt.Sprintf("no prefix parser for %s found", p.currentToken.Type))
-		return nil
-	}
-	leftExpression := prefix()
-	return leftExpression
+func (p *Parser) parseBoolean() ast.Expression {
+	return &ast.Boolean{Value: p.currentToken.Type == token.TRUE}
 }
 
-func (p *Parser) parsePrefixExpression() ast.Expression {
-	expression := &ast.PrefixExpression{
+func (p *Parser) parseInfixExpression(left ast.Expression) ast.Expression {
+	expression := &ast.InfixExpression{
 		Operator: p.currentToken.Literal,
+		Left:     left,
 	}
+	precedence := priority[p.currentToken.Type]
 	p.nextToken()
-	expression.Right = p.parseExpression(PREFIX)
+	expression.Right = p.parseExpression(precedence)
+	if p.peekToken.Type == token.SEMICOLON {
+		p.nextToken()
+	}
 	return expression
 }
