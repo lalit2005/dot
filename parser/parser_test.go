@@ -18,9 +18,9 @@ func TestLetStatement(t *testing.T) {
 		expectedIdentifier string
 		expectedValue      interface{}
 	}{
-		// {"let y = true;", "y", true},
+		{"let y = true;", "y", true},
 		{"let x = 5;", "x", 5},
-		// {"let foobar = y;", "foobar", "y"},
+		{"let foobar = y;", "foobar", "y"},
 	}
 	for _, tt := range tests {
 		p := newParser(tt.input)
@@ -28,13 +28,12 @@ func TestLetStatement(t *testing.T) {
 		for _, e := range p.errors {
 			t.Error("PARSER ERROR: " + e)
 		}
-		t.Logf("%+v", stmts)
 		stmt := stmts.Statements[0].(*ast.LetStatement)
 		if stmt.Identifier.Value != tt.expectedIdentifier {
 			t.Fatalf("wrong identifier. got=%+v. want=%+v", stmt.Identifier.Value, tt.expectedIdentifier)
 		}
-		if stmt.Value != tt.expectedValue {
-			t.Fatalf("wrong value. got=%+v. want=%+v", stmt.Value, tt.expectedValue)
+		if !testLiteralExpression(t, stmt.Value, tt.expectedValue) {
+			return
 		}
 	}
 }
@@ -172,10 +171,10 @@ func testLiteralExpression(
 		return testIntegerLiteral(t, exp, int64(v))
 	case int64:
 		return testIntegerLiteral(t, exp, v)
-		// case string:
-		// 	return testIdentifier(t, exp, v)
-		// case bool:
-		// 	return testBooleanLiteral(t, exp, v)
+	case string:
+		return testIdentifier(t, exp, v)
+	case bool:
+		return testBooleanLiteral(t, exp, v)
 	}
 	t.Errorf("type of exp not handled. got=%T", exp)
 	return false
