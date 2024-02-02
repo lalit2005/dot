@@ -64,6 +64,7 @@ func NewParser(lexer *lexer.Lexer) *Parser {
 	parser.registerPrefix(token.IDENTIFIER, parser.parseIdentifier)
 	parser.registerPrefix(token.INTEGER, parser.parseInteger)
 	parser.registerPrefix(token.LPAREN, parser.parseGroupedExpression)
+	parser.registerPrefix(token.IF, parser.parseIfExpression)
 
 	parser.registerInfix(token.PLUS, parser.parseInfixExpression)
 	parser.registerInfix(token.MINUS, parser.parseInfixExpression)
@@ -217,4 +218,47 @@ func (p *Parser) parseGroupedExpression() ast.Expression {
 	}
 	p.nextToken()
 	return expression
+}
+
+func (p *Parser) parseIfExpression() ast.Expression {
+	// current token: 'if'
+	expression := &ast.IfExpression{}
+	p.nextToken()
+	if p.currentToken.Type != token.LPAREN {
+		p.newError("expected '('")
+		return nil
+	}
+	p.nextToken()
+	expression.Condition = p.parseExpression(LOWEST)
+	// p.nextToken()
+	p.nextToken()
+	if p.currentToken.Type != token.RPAREN {
+		p.newError("expected ')'")
+		return nil
+	}
+	p.nextToken()
+	if p.currentToken.Type != token.LBRACE {
+		p.newError("expected '{'")
+		return nil
+	}
+	p.nextToken()
+	expression.Consequence = p.parseBlockStatement()
+	return expression
+}
+
+func (p *Parser) parseBlockStatement() *ast.BlockStatement {
+	// current token: first token of first statemetent inside block
+	block := &ast.BlockStatement{
+		Statements: []ast.Statement{},
+	}
+	for p.currentToken.Type != token.RBRACE && p.currentToken.Type != token.EOF {
+		statement := p.parseStatement()
+		block.Statements = append(block.Statements, statement)
+	}
+	p.nextToken()
+	if p.currentToken.Type == token.SEMICOLON {
+		p.nextToken()
+	}
+	// current token: first token of next statement
+	return block
 }

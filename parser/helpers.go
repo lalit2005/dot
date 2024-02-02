@@ -2,6 +2,7 @@ package parser
 
 import (
 	"dot/token"
+	"fmt"
 )
 
 func (p *Parser) nextToken() token.Token {
@@ -34,4 +35,12 @@ func (p *Parser) currentPrecedence() int {
 		return precedence
 	}
 	return LOWEST
+}
+
+func (p *Parser) PrintErrors() {
+	if len(p.errors) > 0 {
+		for _, e := range p.errors {
+			fmt.Printf("PARSER ERROR: %s\n", e)
+		}
+	}
 }

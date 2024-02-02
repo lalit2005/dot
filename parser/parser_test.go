@@ -3,6 +3,7 @@ package parser
 import (
 	"dot/ast"
 	"dot/lexer"
+	"strings"
 	"testing"
 )
 
@@ -273,7 +274,7 @@ func TestOperatorPrecedenceParsing(t *testing.T) {
 		// 8
 		{
 			"3 + 4; -5 * 5;",
-			"(3 + 4)((-5) * 5)",
+			"(3 + 4)\n((-5) * 5)",
 		},
 		// 9
 		{
@@ -313,7 +314,7 @@ func TestOperatorPrecedenceParsing(t *testing.T) {
 		// 16
 		{
 			"1 + (2 + 3) + 4;5+5",
-			"((1 + (2 + 3)) + 4)(5 + 5)",
+			"((1 + (2 + 3)) + 4)\n(5 + 5)",
 		},
 		// 17
 		{
@@ -369,10 +370,36 @@ func TestOperatorPrecedenceParsing(t *testing.T) {
 			t.Errorf("tests[%d] PARSER ERROR: "+e, i)
 		}
 		actual := program.String()
-		if actual != tt.expected {
-			t.Errorf("tests[%d] expected=%q, got=%q", i, tt.expected, actual)
+		if strings.TrimSpace(actual) != tt.expected {
+			t.Errorf("tests[%d] expected=%q, got=%q", i, tt.expected, strings.TrimSpace(actual))
 		} else {
 			t.Logf("tests[%d] success", i)
 		}
+	}
+}
+
+func TestIfExpression(t *testing.T) {
+	input := "if (x < y) { x }"
+	p := newParser(input)
+	program := p.ParseProgram()
+	for _, e := range p.errors {
+		t.Error("PARSER ERROR: " + e)
+	}
+	if len(program.Statements) != 1 {
+		t.Fatalf("program.Statements does not contain %d statements. got=%d\n",
+			1, len(program.Statements))
+	}
+	stmt, ok := program.Statements[0].(*ast.ExpressionStatement)
+	if !ok {
+		t.Fatalf("program.Statements[0] is not ast.ExpressionStatement. got=%T",
+			program.Statements[0])
+	}
+	exp, ok := stmt.Expression.(*ast.IfExpression)
+	if !ok {
+		t.Fatalf("stmt is not ast.IfExpression. got=%T", stmt.Expression)
+	}
+
+	if exp.String() != "if ((x < y)) {\n  x\n}" {
+		t.Errorf("exp.String() is not 'if ((x < y)) {\n  x\n}'. got=%q", exp.String())
 	}
 }

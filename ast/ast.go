@@ -1,6 +1,9 @@
 package ast
 
-import "fmt"
+import (
+	"bytes"
+	"fmt"
+)
 
 type Node interface {
 	String() string
@@ -23,7 +26,7 @@ type ExpressionStatement struct {
 func (e *ExpressionStatement) statementNode() {}
 
 func (e *ExpressionStatement) String() string {
-	return e.Expression.String()
+	return e.Expression.String() + "\n"
 }
 
 type Program struct {
@@ -76,7 +79,7 @@ type LetStatement struct {
 func (l *LetStatement) statementNode() {}
 
 func (l *LetStatement) String() string {
-	return fmt.Sprintf("let %s = %s;", l.Identifier.String(), l.Value.String())
+	return fmt.Sprintf("let %s = %s;\n", l.Identifier.String(), l.Value.String())
 }
 
 type ReturnStatement struct {
@@ -86,7 +89,7 @@ type ReturnStatement struct {
 func (r *ReturnStatement) statementNode() {}
 
 func (r *ReturnStatement) String() string {
-	return fmt.Sprintf("return %s;", r.ReturnValue.String())
+	return fmt.Sprintf("return %s;\n", r.ReturnValue.String())
 }
 
 type PrefixExpression struct {
@@ -110,4 +113,40 @@ func (i InfixExpression) expressionNode() {}
 
 func (i InfixExpression) String() string {
 	return fmt.Sprintf("(%s %s %s)", i.Left.String(), i.Operator, i.Right.String())
+}
+
+type BlockStatement struct {
+	Statements []Statement
+}
+
+func (b *BlockStatement) statementNode() {}
+
+func (b *BlockStatement) String() string {
+	var out string
+	for _, s := range b.Statements {
+		out += "  " + s.String()
+	}
+	return out
+}
+
+type IfExpression struct {
+	Condition   Expression
+	Consequence *BlockStatement
+	Alternative *BlockStatement
+}
+
+func (ie *IfExpression) expressionNode() {}
+
+func (ie *IfExpression) String() string {
+	var out bytes.Buffer
+	out.WriteString("if")
+	out.WriteString(" (" + ie.Condition.String() + ") ")
+	out.WriteString("{\n")
+	out.WriteString(ie.Consequence.String())
+	out.WriteString("}")
+	if ie.Alternative != nil {
+		out.WriteString("else ")
+		out.WriteString(ie.Alternative.String())
+	}
+	return out.String()
 }
