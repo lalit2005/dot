@@ -4,7 +4,6 @@ import (
 	"dot/ast"
 	"dot/lexer"
 	"dot/token"
-	"log"
 	"strconv"
 )
 
@@ -154,7 +153,6 @@ func (p *Parser) parseExpressionStatement() ast.Statement {
 	if p.currentToken.Type == token.SEMICOLON {
 		p.nextToken()
 	}
-	// p.nextToken()
 	// current token: first token of next statement
 	return &ast.ExpressionStatement{Expression: expression}
 }
@@ -249,16 +247,25 @@ func (p *Parser) parseIfExpression() ast.Expression {
 		return nil
 	}
 	p.nextToken()
-	log.Printf("current token: %s", p.currentToken.Literal)
 	expression.Consequence = p.parseBlockStatement()
-	log.Printf("current token: %s", p.currentToken.Literal)
 	if p.currentToken.Type != token.RBRACE {
 		p.newError("expected '}'")
 		return nil
 	}
-	// if p.currentToken.Type == token.SEMICOLON {
-	// 	p.nextToken()
-	// }
+	if p.peekToken.Type == token.ELSE {
+		p.nextToken()
+		p.nextToken()
+		if p.currentToken.Type != token.LBRACE {
+			p.newError("expected '{'")
+			return nil
+		}
+		p.nextToken()
+		expression.Alternative = p.parseBlockStatement()
+		if p.currentToken.Type != token.RBRACE {
+			p.newError("expected '}'")
+			return nil
+		}
+	}
 	return expression
 }
 
@@ -275,7 +282,6 @@ func (p *Parser) parseBlockStatement() *ast.BlockStatement {
 	if p.currentToken.Type == token.SEMICOLON {
 		p.nextToken()
 	}
-	// p.nextToken()
 	// current token: first token of next statement
 	return block
 }

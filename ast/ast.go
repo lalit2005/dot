@@ -155,8 +155,9 @@ func (ie *IfExpression) String() string {
 	out.WriteString(ie.Consequence.String())
 	out.WriteString("}")
 	if ie.Alternative != nil {
-		out.WriteString("else ")
+		out.WriteString(" else {\n")
 		out.WriteString(ie.Alternative.String())
+		out.WriteString("}")
 	}
 	return out.String()
 }

@@ -1,5 +1,9 @@
-if (a) {
+if (true) {
   x*4;
   return a;
-}
+} else {
+    2-x
+    let a = 6
+  return b;
+};
 let a = b;
