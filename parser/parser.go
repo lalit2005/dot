@@ -230,18 +230,20 @@ func (p *Parser) parseIfExpression() ast.Expression {
 	}
 	p.nextToken()
 	expression.Condition = p.parseExpression(LOWEST)
-	// p.nextToken()
 	p.nextToken()
+	// current token: )
 	if p.currentToken.Type != token.RPAREN {
 		p.newError("expected ')'")
 		return nil
 	}
 	p.nextToken()
+	// current token: {
 	if p.currentToken.Type != token.LBRACE {
 		p.newError("expected '{'")
 		return nil
 	}
 	p.nextToken()
+	// current token: first token of first statement inside block
 	expression.Consequence = p.parseBlockStatement()
 	return expression
 }
