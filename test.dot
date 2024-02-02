@@ -1,5 +1,5 @@
-if (3 + 5 > last) {
-    let a = 5*3+4;
-    return a;
-};
-
+if (a) {
+  x*4;
+  return a;
+}
+let a = b;

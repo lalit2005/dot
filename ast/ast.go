@@ -26,7 +26,7 @@ type ExpressionStatement struct {
 func (e *ExpressionStatement) statementNode() {}
 
 func (e *ExpressionStatement) String() string {
-	return e.Expression.String() + "\n"
+	return e.Expression.String() + ";\n"
 }
 
 type Program struct {
