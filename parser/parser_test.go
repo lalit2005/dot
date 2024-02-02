@@ -109,11 +109,11 @@ func TestLetStatement(t *testing.T) {
 		//TODO: add test for string literal
 		// {`let foobar = "hello world";`, "foobar", `hello world`},
 	}
-	for _, tt := range tests {
+	for i, tt := range tests {
 		p := newParser(tt.input)
 		stmts := p.ParseProgram()
 		for _, e := range p.errors {
-			t.Error("PARSER ERROR: " + e)
+			t.Errorf("tests[%d] PARSER ERROR: "+e, i)
 		}
 		stmt := stmts.Statements[0].(*ast.LetStatement)
 		if stmt.Identifier.Value != tt.expectedIdentifier {

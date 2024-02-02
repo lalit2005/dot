@@ -1,9 +1,23 @@
-fn(a, b) {
-    let a = "asd"
-    let b = 123;
-    return a;
+2+3
+let a = 2;
+let b = 3;
+let c = fn(a, b) {
+    a + b;
 };
-
-fn(q, w, e, r, t, y) {
-    x
+let d = fn() { x }
+if (true) {
+    let a = 1;
+    let b = 2;
+    let c = a + b;
+    return c;
+} else {
+    let a = 1;
+    let b = 2;
+    let c = a + b;
+    return c;
 }
+add(a, b);
+plot(a, b, c);
+call()
+let a = "asd"
+let b = 123

@@ -76,6 +76,7 @@ func NewParser(lexer *lexer.Lexer) *Parser {
 	parser.registerInfix(token.GT, parser.parseInfixExpression)
 	parser.registerInfix(token.NOT_EQUAL, parser.parseInfixExpression)
 	parser.registerInfix(token.EQUAL, parser.parseInfixExpression)
+	parser.registerInfix(token.LPAREN, parser.parseCallExpression)
 
 	return parser
 }
@@ -172,8 +173,7 @@ func (p *Parser) parseLetStatement() *ast.LetStatement {
 	}
 	p.nextToken()
 	value := p.parseExpression(LOWEST)
-	if p.peekToken.Type == token.SEMICOLON {
-		p.nextToken()
+	p.nextToken()
 	if p.currentToken.Type == token.SEMICOLON {
 		p.nextToken()
 	}
@@ -326,4 +326,29 @@ func (p *Parser) parseFunctionParameters() []*ast.Identifier {
 		}
 	}
 	return parseFunctionParameters
+}
+
+func (p *Parser) parseCallExpression(function ast.Expression) ast.Expression {
+	// current token: '('
+	call := &ast.CallExpression{
+		Function: function,
+	}
+	p.nextToken()
+	call.Arguments = p.parseCallArguments()
+	return call
+}
+
+func (p *Parser) parseCallArguments() []ast.Expression {
+	// current token: first argument
+	arguments := []ast.Expression{}
+	for p.currentToken.Type != token.RPAREN {
+		argument := p.parseExpression(LOWEST)
+		arguments = append(arguments, argument)
+		p.nextToken()
+		// current token: ',' or ')'
+		if p.currentToken.Type == token.COMMA {
+			p.nextToken()
+		}
+	}
+	return arguments
 }
