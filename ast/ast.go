@@ -3,6 +3,7 @@ package ast
 import (
 	"bytes"
 	"fmt"
+	"strings"
 )
 
 type Node interface {
@@ -159,5 +160,26 @@ func (ie *IfExpression) String() string {
 		out.WriteString(ie.Alternative.String())
 		out.WriteString("}")
 	}
+	return out.String()
+}
+
+type Function struct {
+	Parameters []*Identifier
+	Body       *BlockStatement
+}
+
+func (f *Function) expressionNode() {}
+
+func (f *Function) String() string {
+	var out bytes.Buffer
+	params := []string{}
+	for _, p := range f.Parameters {
+		params = append(params, p.String())
+	}
+	out.WriteString("fn(")
+	out.WriteString(strings.Join(params, ", "))
+	out.WriteString(") {\n")
+	out.WriteString(f.Body.String())
+	out.WriteString("}")
 	return out.String()
 }

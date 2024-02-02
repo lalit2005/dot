@@ -1,9 +1,9 @@
-if (true) {
-  x*4;
-  return a;
-} else {
-    2-x
-    let a = 6
-  return b;
+fn(a, b) {
+    let a = "asd"
+    let b = 123;
+    return a;
 };
-let a = b;
+
+fn(q, w, e, r, t, y) {
+    x
+}

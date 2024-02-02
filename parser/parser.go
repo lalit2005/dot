@@ -66,6 +66,7 @@ func NewParser(lexer *lexer.Lexer) *Parser {
 	parser.registerPrefix(token.INTEGER, parser.parseInteger)
 	parser.registerPrefix(token.LPAREN, parser.parseGroupedExpression)
 	parser.registerPrefix(token.IF, parser.parseIfExpression)
+	parser.registerPrefix(token.FUNCTION, parser.parseFunction)
 
 	parser.registerInfix(token.PLUS, parser.parseInfixExpression)
 	parser.registerInfix(token.MINUS, parser.parseInfixExpression)
@@ -269,6 +270,7 @@ func (p *Parser) parseIfExpression() ast.Expression {
 	return expression
 }
 
+// after this function, current token is the first token of the next statement
 func (p *Parser) parseBlockStatement() *ast.BlockStatement {
 	// current token: first token of first statemetent inside block
 	block := &ast.BlockStatement{
@@ -284,4 +286,43 @@ func (p *Parser) parseBlockStatement() *ast.BlockStatement {
 	}
 	// current token: first token of next statement
 	return block
+}
+
+func (p *Parser) parseFunction() ast.Expression {
+	// current token: 'fn'
+	function := &ast.Function{
+		Parameters: []*ast.Identifier{},
+	}
+	p.nextToken()
+	if p.currentToken.Type != token.LPAREN {
+		p.newError("expected '('")
+		return nil
+	}
+	p.nextToken()
+	function.Parameters = p.parseFunctionParameters()
+	p.nextToken()
+	if p.currentToken.Type != token.LBRACE {
+		p.newError("expected '{'")
+		return nil
+	}
+	p.nextToken()
+	function.Body = p.parseBlockStatement()
+	return function
+}
+
+func (p *Parser) parseFunctionParameters() []*ast.Identifier {
+	// current token: first parameter
+	parseFunctionParameters := []*ast.Identifier{}
+	for p.currentToken.Type != token.RPAREN {
+		if p.currentToken.Type == token.IDENTIFIER {
+			identifier := &ast.Identifier{Value: p.currentToken.Literal}
+			parseFunctionParameters = append(parseFunctionParameters, identifier)
+		}
+		p.nextToken()
+		// current token: ',' or ')'
+		if p.currentToken.Type == token.COMMA {
+			p.nextToken()
+		}
+	}
+	return parseFunctionParameters
 }
