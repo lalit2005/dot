@@ -4,6 +4,7 @@ import (
 	"dot/ast"
 	"dot/lexer"
 	"dot/token"
+	"log"
 	"strconv"
 )
 
@@ -62,6 +63,7 @@ func NewParser(lexer *lexer.Lexer) *Parser {
 	parser.registerPrefix(token.TRUE, parser.parseBoolean)
 	parser.registerPrefix(token.FALSE, parser.parseBoolean)
 	parser.registerPrefix(token.IDENTIFIER, parser.parseIdentifier)
+	parser.registerPrefix(token.STRING, parser.parseString)
 	parser.registerPrefix(token.INTEGER, parser.parseInteger)
 	parser.registerPrefix(token.LPAREN, parser.parseGroupedExpression)
 	parser.registerPrefix(token.IF, parser.parseIfExpression)
@@ -191,6 +193,10 @@ func (p *Parser) parseInteger() ast.Expression {
 	return &ast.Integer{Value: value}
 }
 
+func (p *Parser) parseString() ast.Expression {
+	return &ast.String{Value: p.currentToken.Literal}
+}
+
 func (p *Parser) parseBoolean() ast.Expression {
 	return &ast.Boolean{Value: p.currentToken.Type == token.TRUE}
 }
@@ -245,6 +251,7 @@ func (p *Parser) parseIfExpression() ast.Expression {
 	p.nextToken()
 	// current token: first token of first statement inside block
 	expression.Consequence = p.parseBlockStatement()
+	log.Println("CURRENT TOKEN: ", p.currentToken)
 	return expression
 }
 

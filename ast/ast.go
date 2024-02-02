@@ -61,6 +61,16 @@ func (i *Identifier) String() string {
 	return i.Value
 }
 
+type String struct {
+	Value string
+}
+
+func (i *String) expressionNode() {}
+
+func (i *String) String() string {
+	return `"` + i.Value + `"`
+}
+
 type Boolean struct {
 	Value bool
 }

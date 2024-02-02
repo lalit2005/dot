@@ -24,12 +24,30 @@ func testLiteralExpression(
 	case int64:
 		return testIntegerLiteral(t, exp, v)
 	case string:
+		if strings.HasPrefix(v, `"`) && strings.HasSuffix(v, `"`) {
+			return testStringLiteral(t, exp, v)
+		}
 		return testIdentifier(t, exp, v)
 	case bool:
 		return testBooleanLiteral(t, exp, v)
 	}
 	t.Errorf("type of exp not handled. got=%T", exp)
 	return false
+}
+
+func testStringLiteral(t *testing.T, exp ast.Expression, value string) bool {
+	str, ok := exp.(*ast.String)
+	if !ok {
+		t.Errorf("exp not *ast.String. got=%T", exp)
+		return false
+	}
+
+	if str.Value != strings.Trim(value, `"`) {
+		t.Errorf("str.Value not %s. got=%s", value, str.Value)
+		return false
+	}
+
+	return true
 }
 
 func testIntegerLiteral(t *testing.T, il ast.Expression, value int64) bool {
@@ -86,6 +104,7 @@ func TestLetStatement(t *testing.T) {
 		{"let y = true;", "y", true},
 		{"let x = 5;", "x", 5},
 		{"let foobar = y;", "foobar", "y"},
+		{`let foobar = "hello world";`, "foobar", `"hello world"`},
 	}
 	for _, tt := range tests {
 		p := newParser(tt.input)
