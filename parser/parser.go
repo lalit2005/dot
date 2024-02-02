@@ -174,6 +174,7 @@ func (p *Parser) parseLetStatement() *ast.LetStatement {
 	value := p.parseExpression(LOWEST)
 	if p.peekToken.Type == token.SEMICOLON {
 		p.nextToken()
+	if p.currentToken.Type == token.SEMICOLON {
 		p.nextToken()
 	}
 	return &ast.LetStatement{Identifier: identifier, Value: value}
