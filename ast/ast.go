@@ -68,7 +68,7 @@ type String struct {
 func (i *String) expressionNode() {}
 
 func (i *String) String() string {
-	return `"` + i.Value + `"`
+	return i.Value
 }
 
 type Boolean struct {
