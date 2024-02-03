@@ -10,7 +10,7 @@ import (
 )
 
 func main() {
-	if os.Args[1] == "" || os.Args[1] == "repl" {
+	if os.Args[1] == "repl" {
 		startRepl()
 		return
 	}
