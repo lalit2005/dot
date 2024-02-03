@@ -1,6 +1,7 @@
 package main
 
 import (
+	"dot/eval"
 	"dot/lexer"
 	"dot/parser"
 	"fmt"
@@ -22,5 +23,7 @@ func main() {
 	parser := parser.NewParser(lexer)
 	program := parser.ParseProgram()
 	parser.PrintErrors()
-	fmt.Println(program.String())
+	env := eval.NewEnvironment()
+	evaluated := eval.Eval(program, env)
+	fmt.Println(evaluated)
 }

@@ -1,26 +1,8 @@
-2+3
-let a = 2
-let b = 3
-let c = fn(a, b) {
-    a + b
-}
-let d = fn() { x }
-if (true) {
-    let a = 1
-    let b = 2
-    let c = a + b
-    return c
+let a = 5;
+5*a;
+
+if (a > 1) {
+    "yessss"
 } else {
-    let a = 1
-    let b = 2
-    let c = a + b
-    return c
+    "noo"
 }
-add(a, b)
-d()
-plot(a, b, c)
-call()
-let a = "asd"
-let b = 123
-let c = true
-let d = 4 == 5
