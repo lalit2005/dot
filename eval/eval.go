@@ -2,127 +2,154 @@ package eval
 
 import (
 	"dot/ast"
+	"dot/object"
+	"fmt"
 )
 
-func Eval(node ast.Node, env *Environment) interface{} {
+var (
+	NULL  = &object.Null{}
+	TRUE  = &object.Boolean{Value: true}
+	FALSE = &object.Boolean{Value: false}
+)
+
+func Eval(node ast.Node, env *object.Environment) object.Object {
 	switch node := node.(type) {
 	case *ast.Integer:
-		return node.Value
+		return &object.Integer{Value: node.Value}
 	case *ast.Identifier:
 		val, ok := env.Get(node.Value)
 		if !ok {
-			return nil
+			return newError("identifier not found: " + node.Value)
 		}
 		return val
 	case *ast.ExpressionStatement:
 		return Eval(node.Expression, env)
 	case *ast.Boolean:
-		return node.Value
+		return &object.Boolean{Value: node.Value}
 	case *ast.String:
-		return node.Value
+		return &object.String{Value: node.Value}
 	case *ast.LetStatement:
 		val := Eval(node.Value, env)
 		if val == nil {
 			return nil
 		}
 		env.Set(node.Identifier.Value, val)
+		return val
+	case *ast.ReturnStatement:
+		val := Eval(node.ReturnValue, env)
+		if val == nil {
+			return nil
+		}
+		return &object.ReturnValue{Value: val}
 	case *ast.PrefixExpression:
 		switch node.Operator {
 		case "!":
-			val, ok := Eval(node.Right, env).(bool)
+			right, ok := Eval(node.Right, env).(*object.Boolean)
 			if !ok {
-				return nil
+				return newError("invalid operation: " + node.String())
 			}
-			return !val
+			return &object.Boolean{Value: !right.Value}
 		case "-":
-			val, ok := Eval(node.Right, env).(int64)
+			right, ok := Eval(node.Right, env).(*object.Integer)
 			if !ok {
-				return nil
+				return newError("invalid operation: " + node.String())
 			}
-			return -val
+			return &object.Integer{Value: -right.Value}
+		default:
+			return newError("unknown operator: " + node.Operator)
 		}
 	case *ast.InfixExpression:
 		left := Eval(node.Left, env)
 		right := Eval(node.Right, env)
 		if left == nil || right == nil {
-			return nil
+			if left == nil {
+				return newError("left operand is nil")
+			} else {
+				return newError("right operand is nil")
+			}
 		}
 		switch {
-		case left == nil || right == nil:
-			return nil
+		case left.Type() == object.INTEGER_OBJ && right.Type() == object.INTEGER_OBJ:
+			return evalIntegerInfixOperation(node.Operator, left, right)
 		case node.Operator == "==":
-			return left == right
+			return getBooleanObject(left == right)
 		case node.Operator == "!=":
-			return left != right
-		case left != nil && right != nil:
-			switch node.Operator {
-			case "+":
-				return left.(int64) + right.(int64)
-			case "-":
-				return left.(int64) - right.(int64)
-			case "*":
-				return left.(int64) * right.(int64)
-			case "/":
-				return left.(int64) / right.(int64)
-			case ">":
-				return left.(int64) > right.(int64)
-			case "<":
-				return left.(int64) < right.(int64)
-			default:
-				return nil
+			return getBooleanObject(left != right)
+		case left.Type() == object.STRING_OBJ && right.Type() == object.STRING_OBJ:
+			if node.Operator != "+" {
+				return newError(fmt.Sprintf("unknown operator: %s %s %s", left.Type(), node.Operator, right.Type()))
 			}
+			return &object.String{Value: left.(*object.String).Value + right.(*object.String).Value}
+		case left.Type() != right.Type():
+			return newError(fmt.Sprintf("type mismatch: %s %s %s", left.Type(), node.Operator, right.Type()))
 		}
 	case *ast.IfExpression:
 		condition := Eval(node.Condition, env)
 		if condition == nil {
 			return nil
 		}
-		if condition.(bool) {
+		if condition == TRUE {
 			return Eval(node.Consequence, env)
-		}
-		if node.Alternative != nil {
+		} else {
 			return Eval(node.Alternative, env)
 		}
-
 	case *ast.BlockStatement:
-		var result interface{}
+		var result object.Object
 		for _, statement := range node.Statements {
 			result =
 				Eval(statement, env)
+			if result != nil {
+				rt := result.Type()
+				if rt == object.RETURN_VALUE_OBJ || rt == object.ERROR_OBJ {
+					return result
+				}
+			}
 		}
 		return result
 	case *ast.Program:
-		var result interface{}
+		var result object.Object
 		for _, statement := range node.Statements {
-			result =
-				Eval(statement, env)
+			result = Eval(statement, env)
+			switch result := result.(type) {
+			case *object.ReturnValue:
+				return result.Value
+			case *object.Error:
+				return result
+			}
 		}
 		return result
 	}
-	return nil
+	return newError("unknown node type: " + node.String())
 }
 
-type Environment struct {
-	store map[string]interface{}
-	Outer *Environment
+func newError(msg string) *object.Error {
+	return &object.Error{Message: fmt.Sprint(msg)}
 }
 
-func NewEnvironment() *Environment {
-	return &Environment{store: make(map[string]interface{}), Outer: nil}
+func evalIntegerInfixOperation(operator string, l object.Object, r object.Object) object.Object {
+	left := l.(*object.Integer).Value
+	right := r.(*object.Integer).Value
+	switch operator {
+	case "+":
+		return &object.Integer{Value: left + right}
+	case "-":
+		return &object.Integer{Value: left - right}
+	case "*":
+		return &object.Integer{Value: left * right}
+	case "/":
+		return &object.Integer{Value: left / right}
+	case "<":
+		return getBooleanObject(left < right)
+	case ">":
+		return getBooleanObject(left > right)
+	default:
+		return newError(fmt.Sprintf("unknown operator: %s %s %s", l.Type(), operator, r.Type()))
+	}
 }
 
-func (e *Environment) Get(name string) (interface{}, bool) {
-	val, ok := e.store[name]
-	return val, ok
-}
-
-func (e *Environment) Set(name string, val interface{}) interface{} {
-	e.store[name] = val
-	return val
-}
-
-func NewEnclosedEnvironment(outer *Environment) *Environment {
-	env := NewEnvironment()
-	env.Outer = outer
-	return env
+func getBooleanObject(value bool) *object.Boolean {
+	if value {
+		return TRUE
+	}
+	return FALSE
 }

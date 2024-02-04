@@ -1,8 +1,5 @@
-let a = 5;
-5*a;
-
-if (a > 1) {
-    "yessss"
+if (!!!true) {
+    return "tr";
 } else {
-    "noo"
+    return "fa"
 }

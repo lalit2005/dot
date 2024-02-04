@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"dot/eval"
 	"dot/lexer"
+	"dot/object"
 	"dot/parser"
 	"fmt"
 	"os"
@@ -28,7 +29,7 @@ func main() {
 	parser := parser.NewParser(lexer)
 	program := parser.ParseProgram()
 	parser.PrintErrors()
-	env := eval.NewEnvironment()
+	env := object.NewEnvironment()
 	evaluated := eval.Eval(program, env)
 	fmt.Println(evaluated)
 }
@@ -37,7 +38,7 @@ func startRepl() {
 	in := os.Stdin
 	out := os.Stdout
 	scanner := bufio.NewScanner(in)
-	env := eval.NewEnvironment()
+	env := object.NewEnvironment()
 
 	for {
 		fmt.Print(">> ")
@@ -55,7 +56,7 @@ func startRepl() {
 		parser.PrintErrors()
 		evaluated := eval.Eval(program, env)
 		if evaluated != nil {
-			fmt.Fprintln(out, evaluated)
+			fmt.Fprintln(out, evaluated.String())
 		}
 	}
 
