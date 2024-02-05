@@ -3,7 +3,7 @@ package lexer
 import "dot/token"
 
 func isAlphabet(ch byte) bool {
-	if (ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z') {
+	if (ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z') || ch == '_' {
 		return true
 	}
 	return false
