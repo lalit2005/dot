@@ -6,12 +6,16 @@ type Environment struct {
 }
 
 func NewEnvironment() *Environment {
-	return &Environment{Store: make(map[string]Object), Outer: nil}
+	s := make(map[string]Object)
+	return &Environment{Store: s, Outer: nil}
 }
 
 func (e *Environment) Get(name string) (Object, bool) {
-	val, ok := e.Store[name]
-	return val, ok
+	obj, ok := e.Store[name]
+	if !ok && e.Outer != nil {
+		obj, ok = e.Outer.Get(name)
+	}
+	return obj, ok
 }
 
 func (e *Environment) Set(name string, val Object) Object {
