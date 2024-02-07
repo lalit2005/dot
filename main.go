@@ -29,6 +29,7 @@ func main() {
 	parser := parser.NewParser(lexer)
 	program := parser.ParseProgram()
 	parser.PrintErrors()
+	// fmt.Print(program.String())
 	env := object.NewEnvironment()
 	evaluated := eval.Eval(program, env)
 	fmt.Println(evaluated)

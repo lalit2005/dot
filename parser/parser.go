@@ -67,6 +67,7 @@ func NewParser(lexer *lexer.Lexer) *Parser {
 	parser.registerPrefix(token.LPAREN, parser.parseGroupedExpression)
 	parser.registerPrefix(token.IF, parser.parseIfExpression)
 	parser.registerPrefix(token.FUNCTION, parser.parseFunction)
+	parser.registerPrefix(token.LBRACKET, parser.parseArrayLiteral)
 
 	parser.registerInfix(token.PLUS, parser.parseInfixExpression)
 	parser.registerInfix(token.MINUS, parser.parseInfixExpression)
@@ -351,4 +352,21 @@ func (p *Parser) parseCallArguments() []ast.Expression {
 		}
 	}
 	return arguments
+}
+
+func (p *Parser) parseArrayLiteral() ast.Expression {
+	// current token: '['
+	array := &ast.ArrayLiteral{
+		Elements: []ast.Expression{},
+	}
+	for p.peekToken.Type != token.RBRACKET {
+		p.nextToken()
+		element := p.parseExpression(LOWEST)
+		array.Elements = append(array.Elements, element)
+		if p.peekToken.Type == token.COMMA {
+			p.nextToken()
+		}
+	}
+	p.nextToken()
+	return array
 }

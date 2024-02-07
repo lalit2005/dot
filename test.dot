@@ -3,3 +3,6 @@ let newAdder = fn(x) {
 };
 let addTwo = newAdder(2);
 addTwo(5);
+
+let a = [1, 2, 3, 4, addTwo(10)];
+a;
