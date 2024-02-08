@@ -34,6 +34,7 @@ const (
 	COLON     = ":"
 	LBRACKET  = "["
 	RBRACKET  = "]"
+	COMMENT   = "//"
 
 	UNKNOWN = "UNKNOWN"
 )

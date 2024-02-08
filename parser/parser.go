@@ -57,6 +57,11 @@ func NewParser(lexer *lexer.Lexer) *Parser {
 		infixParsers:  make(map[token.TokenType]infixParser),
 	}
 
+	if parser.currentToken.Type == token.COMMENT {
+		parser.currentToken = parser.peekToken
+		parser.peekToken = lexer.NextToken()
+	}
+
 	parser.registerPrefix(token.BANG, parser.parsePrefixExpression)
 	parser.registerPrefix(token.MINUS, parser.parsePrefixExpression)
 	parser.registerPrefix(token.TRUE, parser.parseBoolean)
@@ -88,6 +93,9 @@ func (p *Parser) ParseProgram() *ast.Program {
 	}
 	for p.currentToken.Type != token.EOF {
 		statement := p.parseStatement()
+		if p.currentToken.Type == token.COMMENT {
+			p.nextToken()
+		}
 		program.Statements = append(program.Statements, statement)
 	}
 	return program

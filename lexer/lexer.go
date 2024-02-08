@@ -21,6 +21,14 @@ func (l *Lexer) NextToken() token.Token {
 	case '-':
 		tok = newToken(token.MINUS, l.currentChar)
 	case '/':
+		if l.peekChar == '/' {
+			initialPosition := l.currentPosition
+			for l.currentChar != '\n' && l.currentChar != 0 {
+				l.readChar()
+			}
+			tok = token.Token{Type: token.COMMENT, Literal: l.input[initialPosition:l.currentPosition]}
+			return tok
+		}
 		tok = newToken(token.SLASH, l.currentChar)
 	case '*':
 		tok = newToken(token.ASTERISK, l.currentChar)

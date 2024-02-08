@@ -8,6 +8,10 @@ import (
 func (p *Parser) nextToken() token.Token {
 	p.currentToken = p.peekToken
 	p.peekToken = p.lexer.NextToken()
+	if p.currentToken.Type == token.COMMENT {
+		p.currentToken = p.peekToken
+		p.peekToken = p.lexer.NextToken()
+	}
 	return p.currentToken
 }
 
