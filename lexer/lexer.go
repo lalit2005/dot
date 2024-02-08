@@ -68,11 +68,12 @@ func (l *Lexer) NextToken() token.Token {
 		tok = newToken(token.LT, l.currentChar)
 	case '>':
 		tok = newToken(token.GT, l.currentChar)
-	case '"':
+	case '"', '\'':
+		quoteType := l.currentChar
 		l.readChar()
 		initialPosition := l.currentPosition
 		for {
-			if l.currentChar == '"' || l.currentChar == 0 {
+			if l.currentChar == quoteType || l.currentChar == 0 {
 				break
 			}
 			l.readChar()

@@ -8,8 +8,8 @@ let addNumbers = fn(a, b) {
         // If the sum is greater than 10, print a message
         return "The sum is greater than 10";
     } else {
-        // If the sum is not greater than 10, print a different message
-        return "The sum is not greater than 10";
+        // If the sum is lesser than 10, print a different message
+        return 'The sum is lesser than 10';
     }
 
     // Return the sum
@@ -17,7 +17,7 @@ let addNumbers = fn(a, b) {
 };
 
 // Call the `addNumbers` function with arguments 5 and 7
-let result = addNumbers(5, 7);
+let result = addNumbers(5, 2);
 
 // Return the result
 result;

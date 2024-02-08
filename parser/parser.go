@@ -57,6 +57,7 @@ func NewParser(lexer *lexer.Lexer) *Parser {
 		infixParsers:  make(map[token.TokenType]infixParser),
 	}
 
+	// if the first token is a comment, skip it
 	if parser.currentToken.Type == token.COMMENT {
 		parser.currentToken = parser.peekToken
 		parser.peekToken = lexer.NextToken()
