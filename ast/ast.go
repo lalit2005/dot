@@ -43,13 +43,13 @@ func (p *Program) String() string {
 }
 
 type Integer struct {
-	Value int64
+	Value float64
 }
 
 func (i *Integer) expressionNode() {}
 
 func (i *Integer) String() string {
-	return fmt.Sprintf("%d", i.Value)
+	return fmt.Sprintf("%g", i.Value)
 }
 
 type Identifier struct {

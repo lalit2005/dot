@@ -94,6 +94,7 @@ func (p *Parser) ParseProgram() *ast.Program {
 	}
 	for p.currentToken.Type != token.EOF {
 		statement := p.parseStatement()
+		// this sets current token to the first token of the next statement
 		if p.currentToken.Type == token.COMMENT {
 			p.nextToken()
 		}
@@ -195,7 +196,7 @@ func (p *Parser) parseIdentifier() ast.Expression {
 }
 
 func (p *Parser) parseInteger() ast.Expression {
-	value, err := strconv.ParseInt(p.currentToken.Literal, 0, 64)
+	value, err := strconv.ParseFloat(p.currentToken.Literal, 64)
 	if err != nil {
 		p.newError("could not parse '" + p.currentToken.Literal + "' as integer")
 		return nil

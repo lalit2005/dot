@@ -1,23 +1,2 @@
-// Define a function that takes two numbers as arguments and returns their sum
-let addNumbers = fn(a, b) {
-    // Use the `let` keyword to declare a variable `sum` and assign the sum of `a` and `b` to it
-    let sum = a + b;
-
-    // Use an `if` statement to check if the sum is greater than 10
-    if (sum > 10) {
-        // If the sum is greater than 10, print a message
-        return "The sum is greater than 10";
-    } else {
-        // If the sum is lesser than 10, print a different message
-        return 'The sum is lesser than 10';
-    }
-
-    // Return the sum
-    return sum;
-};
-
-// Call the `addNumbers` function with arguments 5 and 7
-let result = addNumbers(5, 2);
-
-// Return the result
-result;
+let x = 1.66;
+x + 2.34;

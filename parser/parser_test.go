@@ -20,9 +20,9 @@ func testLiteralExpression(
 ) bool {
 	switch v := expected.(type) {
 	case int:
-		return testIntegerLiteral(t, exp, int64(v))
-	case int64:
-		return testIntegerLiteral(t, exp, v)
+		return testIntegerLiteral(t, exp, float64(v))
+	case float64:
+		return testIntegerLiteral(t, exp, float64(v))
 	case string:
 		// TODO: add test for string literal
 		// if strings.HasPrefix(v, `"`) && strings.HasSuffix(v, `"`) {
@@ -52,7 +52,7 @@ func testLiteralExpression(
 // 	return true
 // }
 
-func testIntegerLiteral(t *testing.T, il ast.Expression, value int64) bool {
+func testIntegerLiteral(t *testing.T, il ast.Expression, value float64) bool {
 	integ, ok := il.(*ast.Integer)
 	if !ok {
 		t.Errorf("il not *ast.IntegerLiteral. got=%T", il)
@@ -60,7 +60,7 @@ func testIntegerLiteral(t *testing.T, il ast.Expression, value int64) bool {
 	}
 
 	if integ.Value != value {
-		t.Errorf("integ.Value not %d. got=%d", value, integ.Value)
+		t.Errorf("integ.Value not %g. got=%g", value, integ.Value)
 		return false
 	}
 

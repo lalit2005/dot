@@ -9,7 +9,10 @@ func isAlphabet(ch byte) bool {
 	return false
 }
 
-func isDigit(ch byte) bool {
+func isDigit(ch byte, previousChar byte) bool {
+	if ch == '.' && ('0') <= previousChar && (previousChar <= '9') {
+		return true
+	}
 	if '0' <= ch && ch <= '9' {
 		return true
 	}

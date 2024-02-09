@@ -30,7 +30,7 @@ type Object interface {
 }
 
 type Integer struct {
-	Value int64
+	Value float64
 }
 
 func (i *Integer) Type() ObjectType {
@@ -38,7 +38,7 @@ func (i *Integer) Type() ObjectType {
 }
 
 func (i *Integer) String() string {
-	return fmt.Sprintf("%d", i.Value)
+	return fmt.Sprintf("%g", i.Value)
 }
 
 type Boolean struct {
