@@ -40,7 +40,8 @@ func startRepl() {
 	out := os.Stdout
 	scanner := bufio.NewScanner(in)
 	env := object.NewEnvironment()
-
+	fmt.Println("Welcome to Dot programming language")
+	fmt.Println("Type '.exit' to exit")
 	for {
 		fmt.Print(">> ")
 		scanned := scanner.Scan()
@@ -48,7 +49,7 @@ func startRepl() {
 			return
 		}
 		line := scanner.Text()
-		if line == "exit()" {
+		if line == ".exit" {
 			return
 		}
 		lexer := lexer.NewLexer(line)
