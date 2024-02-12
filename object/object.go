@@ -59,7 +59,8 @@ func (b *Boolean) String() string {
 
 type Null struct{}
 
-func (n *Null) String() string { return NULL_OBJ }
+func (n *Null) Type() ObjectType { return NULL_OBJ }
+func (n *Null) String() string   { return NULL_OBJ }
 
 type String struct{ Value string }
 

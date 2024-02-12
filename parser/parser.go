@@ -84,6 +84,7 @@ func NewParser(lexer *lexer.Lexer) *Parser {
 	parser.registerInfix(token.NOT_EQUAL, parser.parseInfixExpression)
 	parser.registerInfix(token.EQUAL, parser.parseInfixExpression)
 	parser.registerInfix(token.LPAREN, parser.parseCallExpression)
+	parser.registerInfix(token.LBRACKET, parser.parseIndexExpression)
 
 	return parser
 }
@@ -379,4 +380,19 @@ func (p *Parser) parseArrayLiteral() ast.Expression {
 	}
 	p.nextToken()
 	return array
+}
+
+func (p *Parser) parseIndexExpression(left ast.Expression) ast.Expression {
+	// current token: '['
+	index := &ast.IndexExpression{
+		Left: left,
+	}
+	p.nextToken()
+	index.Index = p.parseExpression(LOWEST)
+	if p.peekToken.Type != token.RBRACKET {
+		p.newError("expected ']'")
+		return nil
+	}
+	p.nextToken()
+	return index
 }
