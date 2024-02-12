@@ -15,6 +15,7 @@ const (
 	RETURN_VALUE_OBJ = "RETURN_VALUE"
 	FUNCTION_OBJ     = "FUNCTION"
 	ERROR_OBJ        = "ERROR"
+	ARRAY_OBJ        = "ARRAY"
 )
 
 type Error struct {
@@ -90,4 +91,22 @@ func (f *Function) Type() ObjectType { return FUNCTION_OBJ }
 
 func (f *Function) String() string {
 	return "fn"
+}
+
+type Array struct {
+	Elements []Object
+}
+
+func (a *Array) Type() ObjectType { return ARRAY_OBJ }
+
+func (a *Array) String() string {
+	var out string
+	for i, e := range a.Elements {
+		if i == 0 {
+			out += e.String()
+		} else {
+			out += ", " + e.String()
+		}
+	}
+	return "[" + out + "]"
 }
