@@ -95,9 +95,9 @@ func (l *Lexer) NextToken() token.Token {
 			} else {
 				return token.Token{Type: tokType, Literal: sequence}
 			}
-		} else if isDigit(l.currentChar, previousChar) {
+		} else if isDigit(l.currentChar, previousChar, l.peekChar) {
 			initialPosition := l.currentPosition
-			for isDigit(l.currentChar, previousChar) {
+			for isDigit(l.currentChar, previousChar, l.peekChar) {
 				l.readChar()
 			}
 			sequence := l.input[initialPosition:l.currentPosition]

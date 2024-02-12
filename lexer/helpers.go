@@ -9,11 +9,18 @@ func isAlphabet(ch byte) bool {
 	return false
 }
 
-func isDigit(ch byte, previousChar byte) bool {
-	if ch == '.' && ('0') <= previousChar && (previousChar <= '9') {
+func isDigitBetween0and9(ch byte) bool {
+	if '0' <= ch && ch <= '9' {
 		return true
 	}
-	if '0' <= ch && ch <= '9' {
+	return false
+}
+
+func isDigit(ch byte, previousChar byte, nextChar byte) bool {
+	if ch == '.' && (isDigitBetween0and9(previousChar) || isDigitBetween0and9(nextChar)) {
+		return true
+	}
+	if isDigitBetween0and9(ch) {
 		return true
 	}
 	return false
