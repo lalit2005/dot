@@ -23,8 +23,8 @@ func (p *Parser) registerInfix(tokenType token.TokenType, fn infixParser) {
 	p.infixParsers[tokenType] = fn
 }
 
-func (p *Parser) newError(error string) {
-	p.errors = append(p.errors, error)
+func (p *Parser) newError(error string, line int, column int) {
+	p.errors = append(p.errors, error+" - "+fmt.Sprintf("at line %d, column %d", line, column))
 }
 
 func (p *Parser) peekPrecedence() int {
