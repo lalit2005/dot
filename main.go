@@ -31,7 +31,7 @@ func main() {
 	parser.PrintErrors()
 	// fmt.Print(program.String())
 	env := object.NewEnvironment()
-	evaluated := eval.Eval(program, env)
+	evaluated := eval.Eval(program, env, *lexer)
 	fmt.Println(evaluated)
 }
 
@@ -56,7 +56,7 @@ func startRepl() {
 		parser := parser.NewParser(lexer)
 		program := parser.ParseProgram()
 		parser.PrintErrors()
-		evaluated := eval.Eval(program, env)
+		evaluated := eval.Eval(program, env, *lexer)
 		if evaluated != nil {
 			fmt.Fprintln(out, evaluated.String())
 		}

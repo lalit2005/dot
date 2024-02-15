@@ -2,6 +2,7 @@ package eval
 
 import (
 	"dot/ast"
+	"dot/lexer"
 	"dot/object"
 	"fmt"
 )
@@ -12,31 +13,31 @@ var (
 	FALSE = &object.Boolean{Value: false}
 )
 
-func Eval(node ast.Node, env *object.Environment) object.Object {
+func Eval(node ast.Node, env *object.Environment, lexer lexer.Lexer) object.Object {
 	switch node := node.(type) {
 	case *ast.Integer:
 		return &object.Integer{Value: node.Value}
 	case *ast.Identifier:
 		val, ok := env.Get(node.Value)
 		if !ok {
-			return newError("identifier not found: " + node.Value)
+			return newError("identifier not found: "+node.Value, lexer.Line(), lexer.Column())
 		}
 		return val
 	case *ast.ExpressionStatement:
-		return Eval(node.Expression, env)
+		return Eval(node.Expression, env, lexer)
 	case *ast.Boolean:
 		return &object.Boolean{Value: node.Value}
 	case *ast.String:
 		return &object.String{Value: node.Value}
 	case *ast.LetStatement:
-		val := Eval(node.Value, env)
+		val := Eval(node.Value, env, lexer)
 		if val == nil {
 			return nil
 		}
 		env.Set(node.Identifier.Value, val)
 		return val
 	case *ast.ReturnStatement:
-		val := Eval(node.ReturnValue, env)
+		val := Eval(node.ReturnValue, env, lexer)
 		if val == nil {
 			return nil
 		}
@@ -44,72 +45,72 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 	case *ast.PrefixExpression:
 		switch node.Operator {
 		case "!":
-			right, ok := Eval(node.Right, env).(*object.Boolean)
+			right, ok := Eval(node.Right, env, lexer).(*object.Boolean)
 			if !ok {
-				return newError("invalid operation: " + node.String())
+				return newError("invalid operation: "+node.String(), lexer.Line(), lexer.Column())
 			}
 			return &object.Boolean{Value: !right.Value}
 		case "-":
-			right, ok := Eval(node.Right, env).(*object.Integer)
+			right, ok := Eval(node.Right, env, lexer).(*object.Integer)
 			if !ok {
-				return newError("invalid operation: " + node.String())
+				return newError("invalid operation: "+node.String(), lexer.Line(), lexer.Column())
 			}
 			return &object.Integer{Value: -right.Value}
 		default:
-			return newError("unknown operator: " + node.Operator)
+			return newError("unknown operator: "+node.Operator, lexer.Line(), lexer.Column())
 		}
 	case *ast.InfixExpression:
-		left := Eval(node.Left, env)
-		right := Eval(node.Right, env)
+		left := Eval(node.Left, env, lexer)
+		right := Eval(node.Right, env, lexer)
 		if left == nil || right == nil {
 			if left == nil {
-				return newError("left operand is nil")
+				return newError("left operand is nil", lexer.Line(), lexer.Column())
 			} else {
-				return newError("right operand is nil")
+				return newError("right operand is nil", lexer.Line(), lexer.Column())
 			}
 		}
 		switch {
 		case left.Type() == object.INTEGER_OBJ && right.Type() == object.INTEGER_OBJ:
-			return evalIntegerInfixOperation(node.Operator, left, right)
+			return evalIntegerInfixOperation(node.Operator, left, right, lexer)
 		case node.Operator == "==":
 			return getBooleanObject(left == right)
 		case node.Operator == "!=":
 			return getBooleanObject(left != right)
 		case left.Type() == object.STRING_OBJ && right.Type() == object.STRING_OBJ:
 			if node.Operator != "+" {
-				return newError(fmt.Sprintf("unknown operator: %s %s %s", left.Type(), node.Operator, right.Type()))
+				return newError(fmt.Sprintf("unknown operator: %s %s %s", left.Type(), node.Operator, right.Type()), lexer.Line(), lexer.Column())
 			}
 			return &object.String{Value: left.(*object.String).Value + right.(*object.String).Value}
 		case left.Type() != right.Type():
-			return newError(fmt.Sprintf("type mismatch: %s %s %s", left.Type(), node.Operator, right.Type()))
+			return newError(fmt.Sprintf("type mismatch: %s %s %s", left.Type(), node.Operator, right.Type()), lexer.Line(), lexer.Column())
 		}
 	case *ast.IfExpression:
-		condition := Eval(node.Condition, env)
+		condition := Eval(node.Condition, env, lexer)
 		if condition == nil {
 			return nil
 		}
 		if condition == TRUE {
-			return Eval(node.Consequence, env)
+			return Eval(node.Consequence, env, lexer)
 		} else {
-			return Eval(node.Alternative, env)
+			return Eval(node.Alternative, env, lexer)
 		}
 	case *ast.Function:
 		return &object.Function{Parameters: node.Parameters, Body: node.Body, Env: env}
 	case *ast.CallExpression:
-		function := Eval(node.Function, env)
+		function := Eval(node.Function, env, lexer)
 		if function.Type() == object.ERROR_OBJ {
 			return function
 		}
-		args := evalExpressions(node.Arguments, env)
+		args := evalExpressions(node.Arguments, env, lexer)
 		if len(args) == 1 && args[0].Type() == object.ERROR_OBJ {
 			return args[0]
 		}
-		return applyFunction(function, args)
+		return applyFunction(function, args, lexer)
 	case *ast.BlockStatement:
 		var result object.Object
 		for _, statement := range node.Statements {
 			result =
-				Eval(statement, env)
+				Eval(statement, env, lexer)
 			if result != nil {
 				rt := result.Type()
 				if rt == object.RETURN_VALUE_OBJ || rt == object.ERROR_OBJ {
@@ -119,25 +120,25 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 		}
 		return result
 	case *ast.ArrayLiteral:
-		elements := evalExpressions(node.Elements, env)
+		elements := evalExpressions(node.Elements, env, lexer)
 		if len(elements) == 1 && elements[0].Type() == object.ERROR_OBJ {
 			return elements[0]
 		}
 		return &object.Array{Elements: elements}
 	case *ast.IndexExpression:
-		left := Eval(node.Left, env)
+		left := Eval(node.Left, env, lexer)
 		if left.Type() == object.ERROR_OBJ {
 			return left
 		}
-		index := Eval(node.Index, env)
+		index := Eval(node.Index, env, lexer)
 		if index.Type() == object.ERROR_OBJ {
 			return index
 		}
-		return evalIndexExpression(left, index)
+		return evalIndexExpression(left, index, lexer)
 	case *ast.Program:
 		var result object.Object
 		for _, statement := range node.Statements {
-			result = Eval(statement, env)
+			result = Eval(statement, env, lexer)
 			switch result := result.(type) {
 			case *object.ReturnValue:
 				return result.Value
@@ -147,14 +148,14 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 		}
 		return result
 	}
-	return newError("unknown node type: " + node.String())
+	return newError("unknown node type: "+node.String(), lexer.Line(), lexer.Column())
 }
 
-func newError(msg string) *object.Error {
-	return &object.Error{Message: fmt.Sprint(msg)}
+func newError(msg string, line int, column int) *object.Error {
+	return &object.Error{Message: msg + " - " + fmt.Sprintf("at line %d, column %d", line, column)}
 }
 
-func evalIntegerInfixOperation(operator string, l object.Object, r object.Object) object.Object {
+func evalIntegerInfixOperation(operator string, l object.Object, r object.Object, lexer lexer.Lexer) object.Object {
 	left := l.(*object.Integer).Value
 	right := r.(*object.Integer).Value
 	switch operator {
@@ -171,7 +172,7 @@ func evalIntegerInfixOperation(operator string, l object.Object, r object.Object
 	case ">":
 		return getBooleanObject(left > right)
 	default:
-		return newError(fmt.Sprintf("unknown operator: %s %s %s", l.Type(), operator, r.Type()))
+		return newError(fmt.Sprintf("unknown operator: %s %s %s", l.Type(), operator, r.Type()), lexer.Line(), lexer.Column())
 	}
 }
 
@@ -182,26 +183,29 @@ func getBooleanObject(value bool) *object.Boolean {
 	return FALSE
 }
 
-func evalExpressions(exps []ast.Expression, env *object.Environment) []object.Object {
+func evalExpressions(exps []ast.Expression, env *object.Environment, lexer lexer.Lexer) []object.Object {
 	var result []object.Object
 	for _, e := range exps {
-		evaluated := Eval(e, env)
+		evaluated := Eval(e, env, lexer)
 		if evaluated == nil {
 			return nil
+		}
+		if evaluated.Type() == object.ERROR_OBJ {
+			return []object.Object{evaluated}
 		}
 		result = append(result, evaluated)
 	}
 	return result
 }
 
-func applyFunction(fn object.Object, args []object.Object) object.Object {
+func applyFunction(fn object.Object, args []object.Object, lexer lexer.Lexer) object.Object {
 	switch fn := fn.(type) {
 	case *object.Function:
 		extendedEnv := extendFunctionEnv(fn, args)
-		evaluated := Eval(fn.Body, extendedEnv)
+		evaluated := Eval(fn.Body, extendedEnv, lexer)
 		return unwrapReturnValue(evaluated)
 	default:
-		return newError("not a function: " + string(fn.Type()))
+		return newError("not a function: "+string(fn.Type()), lexer.Line(), lexer.Column())
 	}
 }
 
@@ -219,12 +223,12 @@ func unwrapReturnValue(obj object.Object) object.Object {
 	return obj
 }
 
-func evalIndexExpression(left object.Object, index object.Object) object.Object {
+func evalIndexExpression(left object.Object, index object.Object, lexer lexer.Lexer) object.Object {
 	switch {
 	case left.Type() == object.ARRAY_OBJ && index.Type() == object.INTEGER_OBJ:
 		return evalArrayIndexExpression(left, index)
 	default:
-		return newError(fmt.Sprintf("index operator not supported: %s", left.Type()))
+		return newError((fmt.Sprintf("index operator not supported: %s", left.Type())), lexer.Line(), lexer.Column())
 	}
 }
 

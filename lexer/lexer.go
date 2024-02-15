@@ -2,6 +2,7 @@ package lexer
 
 import (
 	"dot/token"
+	"strings"
 )
 
 type Lexer struct {
@@ -10,6 +11,8 @@ type Lexer struct {
 	peekPosition    int
 	currentChar     byte
 	peekChar        byte
+	line            int
+	column          int
 }
 
 func (l *Lexer) NextToken() token.Token {
@@ -117,11 +120,13 @@ func (l *Lexer) NextToken() token.Token {
 
 func NewLexer(input string) *Lexer {
 	lexer := &Lexer{
-		input:           input,
+		input:           strings.TrimSpace(input),
 		currentPosition: 0,
 		peekPosition:    0,
 		currentChar:     input[0],
 		peekChar:        0,
+		line:            1,
+		column:          0,
 	}
 	if len(input) > 1 {
 		lexer.peekChar = input[1]
@@ -131,6 +136,12 @@ func NewLexer(input string) *Lexer {
 }
 
 func (l *Lexer) readChar() {
+	if l.currentChar == '\n' {
+		l.line += 1
+		l.column = 0
+	} else {
+		l.column += 1
+	}
 	l.currentPosition = l.peekPosition
 	if l.peekPosition > len(l.input)-1 {
 		l.currentChar = 0

@@ -35,3 +35,12 @@ func (l *Lexer) skipWhitespace() {
 		l.readChar()
 	}
 }
+
+func (l *Lexer) Line() int {
+	return l.line
+}
+
+func (l *Lexer) Column() int {
+	// after parsing a token, we need to return the column of previous token
+	return l.column - 1
+}
