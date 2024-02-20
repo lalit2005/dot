@@ -7,10 +7,10 @@ import (
 	"testing"
 )
 
-func newParser(input string) *Parser {
+func newParser(input string) (*Parser, *lexer.Lexer) {
 	l := lexer.NewLexer(input)
 	p := NewParser(l)
-	return p
+	return p, l
 }
 
 func testLiteralExpression(
@@ -110,7 +110,7 @@ func TestLetStatement(t *testing.T) {
 		// {`let foobar = "hello world";`, "foobar", `hello world`},
 	}
 	for i, tt := range tests {
-		p := newParser(tt.input)
+		p, _ := newParser(tt.input)
 		stmts := p.ParseProgram()
 		for _, e := range p.errors {
 			t.Errorf("tests[%d] PARSER ERROR: "+e, i)
@@ -136,7 +136,7 @@ func TestReturnStatements(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		p := newParser(tt.input)
+		p, _ := newParser(tt.input)
 		program := p.ParseProgram()
 		for _, e := range p.errors {
 			t.Error("PARSER ERROR: " + e)
@@ -173,7 +173,7 @@ func TestParsingPrefixExpressions(t *testing.T) {
 	}
 
 	for _, tt := range prefixTests {
-		p := newParser(tt.input)
+		p, _ := newParser(tt.input)
 		program := p.ParseProgram()
 		for _, e := range p.errors {
 			t.Error("PARSER ERROR: " + e)
@@ -221,7 +221,7 @@ func TestParsingInfixExpressions(t *testing.T) {
 	}
 
 	for _, tt := range infixTests {
-		p := newParser(tt.input)
+		p, _ := newParser(tt.input)
 		program := p.ParseProgram()
 		for _, e := range p.errors {
 			t.Error("PARSER ERROR: " + e)
@@ -386,7 +386,7 @@ func TestOperatorPrecedenceParsing(t *testing.T) {
 	}
 
 	for i, tt := range tests {
-		p := newParser(tt.input)
+		p, _ := newParser(tt.input)
 		program := p.ParseProgram()
 		for _, e := range p.errors {
 			t.Errorf("tests[%d] PARSER ERROR: "+e, i)
@@ -402,7 +402,7 @@ func TestOperatorPrecedenceParsing(t *testing.T) {
 
 func TestIfExpression(t *testing.T) {
 	input := "if (x < y) { x }"
-	p := newParser(input)
+	p, _ := newParser(input)
 	program := p.ParseProgram()
 	for _, e := range p.errors {
 		t.Error("PARSER ERROR: " + e)

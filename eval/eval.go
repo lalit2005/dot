@@ -91,8 +91,10 @@ func Eval(node ast.Node, env *object.Environment, lexer lexer.Lexer) object.Obje
 		}
 		if condition == TRUE {
 			return Eval(node.Consequence, env, lexer)
-		} else {
+		} else if node.Alternative != nil {
 			return Eval(node.Alternative, env, lexer)
+		} else {
+			return NULL
 		}
 	case *ast.Function:
 		return &object.Function{Parameters: node.Parameters, Body: node.Body, Env: env}
@@ -109,8 +111,7 @@ func Eval(node ast.Node, env *object.Environment, lexer lexer.Lexer) object.Obje
 	case *ast.BlockStatement:
 		var result object.Object
 		for _, statement := range node.Statements {
-			result =
-				Eval(statement, env, lexer)
+			result = Eval(statement, env, lexer)
 			if result != nil {
 				rt := result.Type()
 				if rt == object.RETURN_VALUE_OBJ || rt == object.ERROR_OBJ {
@@ -171,6 +172,8 @@ func evalIntegerInfixOperation(operator string, l object.Object, r object.Object
 		return getBooleanObject(left < right)
 	case ">":
 		return getBooleanObject(left > right)
+	case "==":
+		return getBooleanObject(left == right)
 	default:
 		return newError(fmt.Sprintf("unknown operator: %s %s %s", l.Type(), operator, r.Type()), lexer.Line(), lexer.Column())
 	}
