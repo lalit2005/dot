@@ -174,6 +174,8 @@ func evalIntegerInfixOperation(operator string, l object.Object, r object.Object
 		return getBooleanObject(left > right)
 	case "==":
 		return getBooleanObject(left == right)
+	case "!=":
+		return getBooleanObject(left != right)
 	default:
 		return newError(fmt.Sprintf("unknown operator: %s %s %s", l.Type(), operator, r.Type()), lexer.Line(), lexer.Column())
 	}

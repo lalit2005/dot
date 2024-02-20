@@ -1,8 +1,7 @@
-let factorial = fn(n) {
-  if (n == 0) {
-    return 1;
-  }
-  return n * factorial(n - 1);
-}
+let x = 13;
 
-factorial(5);
+if (10 != x) {
+  return "yess";
+} else {
+  return "noo";
+}
