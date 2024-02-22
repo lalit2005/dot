@@ -1,6 +1,6 @@
 let asd = fn() {
-  if ((3 < 5) || (5 < 2)) {
-    return "yess" ;
+  if (true && true) {
+    return "yess";
   } else {
     return "no";
   }

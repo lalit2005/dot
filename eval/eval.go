@@ -5,6 +5,7 @@ import (
 	"dot/lexer"
 	"dot/object"
 	"fmt"
+	"log"
 )
 
 var (
@@ -83,6 +84,11 @@ func Eval(node ast.Node, env *object.Environment, lexer lexer.Lexer) object.Obje
 			if left.Type() != object.BOOLEAN_OBJ || right.Type() != object.BOOLEAN_OBJ {
 				return newError(fmt.Sprintf("invalid operation: %s %s %s", left.Type(), node.Operator, right.Type()), lexer.Line(), lexer.Column())
 			}
+			// if left.(*object.Boolean).Value {
+			// 	return TRUE
+			// } else {
+			// 	return getBooleanObject(left.(*object.Boolean).Value || right.(*object.Boolean).Value)
+			// }
 			return getBooleanObject(left.(*object.Boolean).Value || right.(*object.Boolean).Value)
 		case node.Operator == "!=":
 			return getBooleanObject(left != right)
@@ -99,11 +105,14 @@ func Eval(node ast.Node, env *object.Environment, lexer lexer.Lexer) object.Obje
 		if condition == nil {
 			return nil
 		}
-		if condition == TRUE {
+		if condition.String() == "true" {
+			log.Printf("condition is true")
 			return Eval(node.Consequence, env, lexer)
 		} else if node.Alternative != nil {
+			log.Printf("condition is not true and alternative is not nil")
 			return Eval(node.Alternative, env, lexer)
 		} else {
+			log.Printf("condition is not true and alternative is nil")
 			return NULL
 		}
 	case *ast.Function:
