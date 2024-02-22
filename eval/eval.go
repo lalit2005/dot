@@ -74,6 +74,16 @@ func Eval(node ast.Node, env *object.Environment, lexer lexer.Lexer) object.Obje
 			return evalIntegerInfixOperation(node.Operator, left, right, lexer)
 		case node.Operator == "==":
 			return getBooleanObject(left == right)
+		case node.Operator == "&&":
+			if left.Type() != object.BOOLEAN_OBJ || right.Type() != object.BOOLEAN_OBJ {
+				return newError(fmt.Sprintf("invalid operation: %s %s %s", left.Type(), node.Operator, right.Type()), lexer.Line(), lexer.Column())
+			}
+			return getBooleanObject(left.(*object.Boolean).Value && right.(*object.Boolean).Value)
+		case node.Operator == "||":
+			if left.Type() != object.BOOLEAN_OBJ || right.Type() != object.BOOLEAN_OBJ {
+				return newError(fmt.Sprintf("invalid operation: %s %s %s", left.Type(), node.Operator, right.Type()), lexer.Line(), lexer.Column())
+			}
+			return getBooleanObject(left.(*object.Boolean).Value || right.(*object.Boolean).Value)
 		case node.Operator == "!=":
 			return getBooleanObject(left != right)
 		case left.Type() == object.STRING_OBJ && right.Type() == object.STRING_OBJ:

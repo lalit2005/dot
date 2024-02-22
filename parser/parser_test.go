@@ -2,7 +2,9 @@ package parser
 
 import (
 	"dot/ast"
+	"dot/eval"
 	"dot/lexer"
+	"dot/object"
 	"strings"
 	"testing"
 )
@@ -424,4 +426,25 @@ func TestIfExpression(t *testing.T) {
 	if exp.String() != "if ((x < y)) {\n  x;\n}" {
 		t.Errorf("exp.String() is not if ((x < y)) {  x;}. got=%q", exp.String())
 	}
+}
+
+func TestFactorial(t *testing.T) {
+	input := `let sd = fn() {
+  if ((3 < 5) && (5 > 2)) {
+    return "yess" ;
+  } else {
+    return "no";
+  }
+}
+
+sd()`
+
+	p, l := newParser(input)
+	program := p.ParseProgram()
+	env := object.NewEnvironment()
+	evaluated := eval.Eval(program, env, *l)
+	for _, e := range p.errors {
+		t.Error("PARSER ERROR: " + e)
+	}
+	t.Logf("evaluated: %+v", evaluated)
 }

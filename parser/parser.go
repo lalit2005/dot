@@ -10,6 +10,7 @@ import (
 const (
 	_ = iota
 	LOWEST
+	LOGICAL
 	EQUALS
 	LESSGREATER
 	SUM
@@ -45,6 +46,8 @@ var priority = map[token.TokenType]int{
 	token.LPAREN:    CALL,
 	token.LBRACKET:  INDEX,
 	token.BANG:      PREFIX,
+	token.AND:       LOGICAL,
+	token.OR:        LOGICAL,
 }
 
 func NewParser(lexer *lexer.Lexer) *Parser {
@@ -85,6 +88,8 @@ func NewParser(lexer *lexer.Lexer) *Parser {
 	parser.registerInfix(token.EQUAL, parser.parseInfixExpression)
 	parser.registerInfix(token.LPAREN, parser.parseCallExpression)
 	parser.registerInfix(token.LBRACKET, parser.parseIndexExpression)
+	parser.registerInfix(token.AND, parser.parseInfixExpression)
+	parser.registerInfix(token.OR, parser.parseInfixExpression)
 
 	return parser
 }

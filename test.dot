@@ -1,7 +1,9 @@
-let x = 13;
-
-if (10 != x) {
-  return "yess";
-} else {
-  return "noo";
+let asd = fn() {
+  if ((3 < 5) || (5 < 2)) {
+    return "yess" ;
+  } else {
+    return "no";
+  }
 }
+
+asd()

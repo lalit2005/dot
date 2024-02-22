@@ -35,6 +35,8 @@ const (
 	LBRACKET  = "["
 	RBRACKET  = "]"
 	COMMENT   = "//"
+	AND       = "&&"
+	OR        = "||"
 
 	UNKNOWN = "UNKNOWN"
 )
