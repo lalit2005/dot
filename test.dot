@@ -1,9 +1,6 @@
-let asd = fn() {
-  if (true && true) {
-    return "yess";
-  } else {
-    return "no";
-  }
-}
+let a = [1, 2, 3, 4, "asd"];
 
-asd()
+a[2] = 5;
+
+let asd = 5 + (a[4] = 5);
+a[0] + asd; // 11

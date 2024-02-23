@@ -428,16 +428,13 @@ func TestIfExpression(t *testing.T) {
 	}
 }
 
-func TestFactorial(t *testing.T) {
-	input := `let sd = fn() {
-  if ((3 < 5) && (5 > 2)) {
-    return "yess" ;
-  } else {
-    return "no";
-  }
-}
+func TestSnippet(t *testing.T) {
+	input := `let a = [1, 2, 3, 4, "asd"];
 
-sd()`
+a[2] = 5;
+
+let asd = 5 + (a[4] = 5);
+100 + a[2];`
 
 	p, l := newParser(input)
 	program := p.ParseProgram()

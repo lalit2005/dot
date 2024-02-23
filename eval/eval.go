@@ -5,7 +5,6 @@ import (
 	"dot/lexer"
 	"dot/object"
 	"fmt"
-	"log"
 )
 
 var (
@@ -61,6 +60,25 @@ func Eval(node ast.Node, env *object.Environment, lexer lexer.Lexer) object.Obje
 			return newError("unknown operator: "+node.Operator, lexer.Line(), lexer.Column())
 		}
 	case *ast.InfixExpression:
+		// reassigning the value of an element in an array
+		if node.Operator == "=" {
+			left := node.Left.(*ast.IndexExpression)
+			val := Eval(node.Right, env, lexer)
+			if val == nil {
+				return nil
+			}
+			arrayObj, ok := env.Get(left.Left.String())
+			if !ok {
+				return newError("identifier not found: "+left.Left.String(), lexer.Line(), lexer.Column())
+			}
+			array := arrayObj.(*object.Array)
+			index := int(Eval(left.Index, env, lexer).(*object.Integer).Value)
+			if index < 0 || index >= len(array.Elements) {
+				return newError("index out of range", lexer.Line(), lexer.Column())
+			}
+			array.Elements[index] = val
+			return val
+		}
 		left := Eval(node.Left, env, lexer)
 		right := Eval(node.Right, env, lexer)
 		if left == nil || right == nil {
@@ -84,11 +102,6 @@ func Eval(node ast.Node, env *object.Environment, lexer lexer.Lexer) object.Obje
 			if left.Type() != object.BOOLEAN_OBJ || right.Type() != object.BOOLEAN_OBJ {
 				return newError(fmt.Sprintf("invalid operation: %s %s %s", left.Type(), node.Operator, right.Type()), lexer.Line(), lexer.Column())
 			}
-			// if left.(*object.Boolean).Value {
-			// 	return TRUE
-			// } else {
-			// 	return getBooleanObject(left.(*object.Boolean).Value || right.(*object.Boolean).Value)
-			// }
 			return getBooleanObject(left.(*object.Boolean).Value || right.(*object.Boolean).Value)
 		case node.Operator == "!=":
 			return getBooleanObject(left != right)
@@ -106,13 +119,10 @@ func Eval(node ast.Node, env *object.Environment, lexer lexer.Lexer) object.Obje
 			return nil
 		}
 		if condition.String() == "true" {
-			log.Printf("condition is true")
 			return Eval(node.Consequence, env, lexer)
 		} else if node.Alternative != nil {
-			log.Printf("condition is not true and alternative is not nil")
 			return Eval(node.Alternative, env, lexer)
 		} else {
-			log.Printf("condition is not true and alternative is nil")
 			return NULL
 		}
 	case *ast.Function:

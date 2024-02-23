@@ -398,6 +398,20 @@ func (p *Parser) parseIndexExpression(left ast.Expression) ast.Expression {
 		p.newError("expected ']'", p.lexer.Line(), p.lexer.Column())
 		return nil
 	}
+	// currect token: end of index expression
 	p.nextToken()
+	// current token: ']'
+	// p.nextToken()
+	if p.peekToken.Type == token.ASSIGN {
+		p.nextToken()
+		p.nextToken()
+		// current token: first token of the right expression
+		return &ast.InfixExpression{
+			Left:     index,
+			Operator: "=",
+			Right:    p.parseExpression(LOWEST, *p.lexer),
+		}
+	}
+
 	return index
 }

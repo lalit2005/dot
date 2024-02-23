@@ -14,7 +14,7 @@ The following table showcases some of the features that have been implemented in
 | Feature            | Status   | Feature     | Status |
 | ------------------ | -------- | ----------- | ------ |
 | Let statements     | Done     | Comments    | Done   |
-| Arrays             | Not done | Strings     | Done   |
+| Arrays             | Done     | Strings     | Done   |
 | Hashmaps           | Not done | Booleans    | Done   |
 | Functions          | Done     | Floats      | Done   |
 | Control flow       | Done     | Integers    | Done   |
