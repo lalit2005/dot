@@ -145,6 +145,10 @@ func (p *Parser) parseStatement() ast.Statement {
 		return p.parseLetStatement()
 	case token.RETURN:
 		return p.parseReturnStatement()
+	case token.WHILE:
+		return p.parseWhileStatement()
+	case token.FOR:
+		return p.parseForStatement()
 	default:
 		return p.parseExpressionStatement()
 	}
@@ -423,4 +427,75 @@ func (p *Parser) parseIndexExpression(left ast.Expression) ast.Expression {
 	}
 
 	return index
+}
+
+func (p *Parser) parseWhileStatement() *ast.WhileStatement {
+	// current token: 'while'
+	stmt := &ast.WhileStatement{}
+	p.nextToken()
+	if p.currentToken.Type != token.LPAREN {
+		p.newError("expected '('", p.lexer.Line(), p.lexer.Column())
+		return nil
+	}
+	p.nextToken()
+	stmt.Condition = p.parseExpression(LOWEST, *p.lexer)
+	p.nextToken()
+	// current token: )
+	if p.currentToken.Type != token.RPAREN {
+		p.newError("expected ')'", p.lexer.Line(), p.lexer.Column())
+		return nil
+	}
+	p.nextToken()
+	// current token: {
+	if p.currentToken.Type != token.LBRACE {
+		p.newError("expected '{'", p.lexer.Line(), p.lexer.Column())
+		return nil
+	}
+	p.nextToken()
+	stmt.Body = p.parseBlockStatement()
+	// log.Println("current token", p.currentToken)
+	if p.currentToken.Type != token.RBRACE {
+		p.newError("expected '}'", p.lexer.Line(), p.lexer.Column())
+		return nil
+	}
+	p.nextToken()
+	if p.currentToken.Type == token.SEMICOLON {
+		p.nextToken()
+	}
+	// current token: first token of next statement
+	return stmt
+}
+
+func (p *Parser) parseForStatement() *ast.ForStatement {
+	// current token: 'for'
+	expression := &ast.ForStatement{}
+	p.nextToken()
+	if p.currentToken.Type != token.LPAREN {
+		p.newError("expected '('", p.lexer.Line(), p.lexer.Column())
+		return nil
+	}
+	p.nextToken()
+	expression.Initializer = p.parseStatement()
+	p.nextToken()
+	expression.Condition = p.parseExpression(LOWEST, *p.lexer)
+	p.nextToken()
+	if p.currentToken.Type != token.SEMICOLON {
+		p.newError("expected ';'", p.lexer.Line(), p.lexer.Column())
+		return nil
+	}
+	p.nextToken()
+	expression.Incrementer = p.parseStatement()
+	p.nextToken()
+	// current token: {
+	if p.currentToken.Type != token.LBRACE {
+		p.newError("expected '{'", p.lexer.Line(), p.lexer.Column())
+		return nil
+	}
+	p.nextToken()
+	expression.Body = p.parseBlockStatement()
+	if p.currentToken.Type != token.RBRACE {
+		p.newError("expected '}'", p.lexer.Line(), p.lexer.Column())
+		return nil
+	}
+	return expression
 }

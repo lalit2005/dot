@@ -11,11 +11,12 @@ Dot like how Linus Lee did with his language _Ink_.
 
 The following table showcases some of the features that have been implemented in Dot:
 
-| Feature            | Status   | Feature     | Status |
-| ------------------ | -------- | ----------- | ------ |
-| Let statements     | Done     | Comments    | Done   |
-| Arrays             | Done     | Strings     | Done   |
-| Hashmaps           | Not done | Booleans    | Done   |
-| Functions          | Done     | Floats      | Done   |
-| Control flow       | Done     | Integers    | Done   |
-| Built-in functions | Done     | Expressions | Done   |
+| Feature            | Status   | Feature     | Status   |
+| ------------------ | -------- | ----------- | -------- |
+| Let statements     | Done     | Comments    | Done     |
+| Arrays             | Done     | Strings     | Done     |
+| Hashmaps           | Not done | Booleans    | Done     |
+| Functions          | Done     | Floats      | Done     |
+| Control flow       | Done     | Integers    | Done     |
+| Built-in functions | Done     | Expressions | Done     |
+| Error messages     | Done     | Loops       | Not done |

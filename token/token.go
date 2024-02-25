@@ -14,6 +14,8 @@ const (
 	FUNCTION   = "FUNCTION"
 	STRING     = "STRING"
 	RETURN     = "RETURN"
+	WHILE      = "WHILE"
+	FOR        = "FOR"
 
 	PLUS      = "+"
 	MINUS     = "-"
@@ -54,4 +56,6 @@ var Keywords = map[string]TokenType{
 	"if":     IF,
 	"return": RETURN,
 	"else":   ELSE,
+	"while":  WHILE,
+	"for":    FOR,
 }

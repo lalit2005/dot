@@ -29,6 +29,14 @@ if (5 < 10) {
 "foo bar";
 [1, 2];
 {"foo": "bar"};
+
+while (true) {
+	  let x = 1;
+}
+
+for (let i = 0; i < 10; i = i + 1) {
+	  let x = 1;
+}
 `
 
 	tests := []struct {
@@ -123,6 +131,41 @@ if (5 < 10) {
 		{token.STRING, "bar"},
 		{token.RBRACE, "}"},
 		{token.SEMICOLON, ";"},
+		{token.WHILE, "while"},
+		{token.LPAREN, "("},
+		{token.TRUE, "true"},
+		{token.RPAREN, ")"},
+		{token.LBRACE, "{"},
+		{token.LET, "let"},
+		{token.IDENTIFIER, "x"},
+		{token.ASSIGN, "="},
+		{token.INTEGER, "1"},
+		{token.SEMICOLON, ";"},
+		{token.RBRACE, "}"},
+		{token.FOR, "for"},
+		{token.LPAREN, "("},
+		{token.LET, "let"},
+		{token.IDENTIFIER, "i"},
+		{token.ASSIGN, "="},
+		{token.INTEGER, "0"},
+		{token.SEMICOLON, ";"},
+		{token.IDENTIFIER, "i"},
+		{token.LT, "<"},
+		{token.INTEGER, "10"},
+		{token.SEMICOLON, ";"},
+		{token.IDENTIFIER, "i"},
+		{token.ASSIGN, "="},
+		{token.IDENTIFIER, "i"},
+		{token.PLUS, "+"},
+		{token.INTEGER, "1"},
+		{token.RPAREN, ")"},
+		{token.LBRACE, "{"},
+		{token.LET, "let"},
+		{token.IDENTIFIER, "x"},
+		{token.ASSIGN, "="},
+		{token.INTEGER, "1"},
+		{token.SEMICOLON, ";"},
+		{token.RBRACE, "}"},
 		{token.EOF, ""},
 	}
 

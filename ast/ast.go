@@ -103,6 +103,45 @@ func (r *ReturnStatement) String() string {
 	return fmt.Sprintf("return %s;\n", r.ReturnValue.String())
 }
 
+type WhileStatement struct {
+	Condition Expression
+	Body      *BlockStatement
+}
+
+func (w *WhileStatement) statementNode() {}
+
+func (w *WhileStatement) String() string {
+	var out bytes.Buffer
+	out.WriteString("while (")
+	out.WriteString(w.Condition.String())
+	out.WriteString(") {\n")
+	out.WriteString(w.Body.String())
+	out.WriteString("}")
+	return out.String()
+}
+
+type ForStatement struct {
+	Initializer Statement
+	Condition   Expression
+	Incrementer Statement
+	Body        *BlockStatement
+}
+
+func (f *ForStatement) statementNode() {}
+
+func (f *ForStatement) String() string {
+	var out bytes.Buffer
+	out.WriteString("for (")
+	out.WriteString(f.Initializer.String())
+	out.WriteString(f.Condition.String())
+	out.WriteString("; ")
+	out.WriteString(f.Incrementer.String())
+	out.WriteString(") {\n")
+	out.WriteString(f.Body.String())
+	out.WriteString("}")
+	return out.String()
+}
+
 type PrefixExpression struct {
 	Operator string
 	Right    Expression

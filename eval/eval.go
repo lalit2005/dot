@@ -168,6 +168,26 @@ func Eval(node ast.Node, env *object.Environment, lexer lexer.Lexer) object.Obje
 			return index
 		}
 		return evalIndexExpression(left, index, lexer)
+	case *ast.WhileStatement:
+		condition := Eval(node.Condition, env, lexer)
+		// log.Println(condition)
+		if condition == nil {
+			return nil
+		}
+		for condition.String() == "true" {
+			result := Eval(node.Body, env, lexer)
+			if result != nil {
+				rt := result.Type()
+				if rt == object.RETURN_VALUE_OBJ || rt == object.ERROR_OBJ {
+					return result
+				}
+			}
+			condition = Eval(node.Condition, env, lexer)
+			if condition == nil {
+				return nil
+			}
+		}
+		return NULL
 	case *ast.Program:
 		var result object.Object
 		for _, statement := range node.Statements {
