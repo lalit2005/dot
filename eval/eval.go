@@ -59,6 +59,12 @@ func Eval(node ast.Node, env *object.Environment, lexer lexer.Lexer) object.Obje
 				return newError("invalid operation: "+node.String(), lexer.Line(), lexer.Column())
 			}
 			return &object.Integer{Value: -right.Value}
+		case "+":
+			right, ok := Eval(node.Right, env, lexer).(*object.Integer)
+			if !ok {
+				return newError("invalid operation: "+node.String(), lexer.Line(), lexer.Column())
+			}
+			return &object.Integer{Value: right.Value}
 		default:
 			return newError("unknown operator: "+node.Operator, lexer.Line(), lexer.Column())
 		}

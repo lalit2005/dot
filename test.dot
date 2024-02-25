@@ -1,4 +1,4 @@
-let x = 0;
+let x = +2;
 
 while (x <= 10) {
     print(x);
