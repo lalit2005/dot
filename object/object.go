@@ -111,3 +111,12 @@ func (a *Array) String() string {
 	}
 	return "[" + out + "]"
 }
+
+type BuiltinFn func(args ...Object) Object
+
+type Builtin struct {
+	Fn BuiltinFn
+}
+
+func (b *Builtin) Type() ObjectType { return FUNCTION_OBJ }
+func (b *Builtin) String() string   { return "builtin function" }

@@ -1,6 +1,14 @@
-let a = [1, 2, 3, 4, "asd"];
-
-a[2] = 5;
-
-let asd = 5 + (a[4] = 5);
-a[0] + asd; // 11
+let a = int(ask("Enter a number: "));
+let b = int(ask("Enter another number: "));
+let operation = ask("Enter an operation: ");
+if (operation == "+") {
+    print(a + b)
+} else if (operation == "-") {
+    print(a - b)
+} else if (operation == "*") {
+    print(a * b)
+} else if (operation == "/") {
+    print(a / b)
+} else {
+    print("Invalid operation")
+}

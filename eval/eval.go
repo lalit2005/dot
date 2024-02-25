@@ -18,6 +18,9 @@ func Eval(node ast.Node, env *object.Environment, lexer lexer.Lexer) object.Obje
 	case *ast.Integer:
 		return &object.Integer{Value: node.Value}
 	case *ast.Identifier:
+		if fn, ok := builtins[node.Value]; ok {
+			return fn
+		}
 		val, ok := env.Get(node.Value)
 		if !ok {
 			return newError("identifier not found: "+node.Value, lexer.Line(), lexer.Column())
@@ -92,7 +95,7 @@ func Eval(node ast.Node, env *object.Environment, lexer lexer.Lexer) object.Obje
 		case left.Type() == object.INTEGER_OBJ && right.Type() == object.INTEGER_OBJ:
 			return evalIntegerInfixOperation(node.Operator, left, right, lexer)
 		case node.Operator == "==":
-			return getBooleanObject(left == right)
+			return getBooleanObject(left.String() == right.String())
 		case node.Operator == "&&":
 			if left.Type() != object.BOOLEAN_OBJ || right.Type() != object.BOOLEAN_OBJ {
 				return newError(fmt.Sprintf("invalid operation: %s %s %s", left.Type(), node.Operator, right.Type()), lexer.Line(), lexer.Column())
@@ -238,6 +241,8 @@ func applyFunction(fn object.Object, args []object.Object, lexer lexer.Lexer) ob
 		extendedEnv := extendFunctionEnv(fn, args)
 		evaluated := Eval(fn.Body, extendedEnv, lexer)
 		return unwrapReturnValue(evaluated)
+	case *object.Builtin:
+		return fn.Fn(args...)
 	default:
 		return newError("not a function: "+string(fn.Type()), lexer.Line(), lexer.Column())
 	}

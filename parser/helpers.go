@@ -48,3 +48,12 @@ func (p *Parser) PrintErrors() {
 		}
 	}
 }
+
+func (p *Parser) expectPeek(t token.TokenType) bool {
+	if p.peekToken.Type == t {
+		p.nextToken()
+		return true
+	}
+	p.newError(fmt.Sprintf("expected next token to be %s, got %s instead", t, p.peekToken.Type), p.lexer.Line(), p.lexer.Column())
+	return false
+}

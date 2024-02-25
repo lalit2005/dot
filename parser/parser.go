@@ -274,6 +274,15 @@ func (p *Parser) parseIfExpression() ast.Expression {
 	if p.peekToken.Type == token.ELSE {
 		p.nextToken()
 		p.nextToken()
+
+		// current token: { or if
+		// if the next token is 'if', parse it as an if expression
+
+		if p.currentToken.Type == token.IF {
+			expression.Alternative = &ast.BlockStatement{Statements: []ast.Statement{&ast.ExpressionStatement{Expression: p.parseIfExpression()}}}
+			return expression
+		}
+
 		if p.currentToken.Type != token.LBRACE {
 			p.newError("expected '{'", p.lexer.Line(), p.lexer.Column())
 			return nil
