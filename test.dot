@@ -1,6 +1,6 @@
 let x = 0;
 
-while (x < 10) {
+while (x <= 10) {
     print(x);
     let x = x + 1;
 };

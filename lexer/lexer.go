@@ -68,8 +68,18 @@ func (l *Lexer) NextToken() token.Token {
 		}
 		tok = newToken(token.BANG, l.currentChar)
 	case '<':
+		if l.peekChar == '=' {
+			l.readChar()
+			l.readChar()
+			return token.Token{Type: token.LTE, Literal: "<="}
+		}
 		tok = newToken(token.LT, l.currentChar)
 	case '>':
+		if l.peekChar == '=' {
+			l.readChar()
+			l.readChar()
+			return token.Token{Type: token.GTE, Literal: ">="}
+		}
 		tok = newToken(token.GT, l.currentChar)
 	case '&':
 		if l.peekChar == '&' {

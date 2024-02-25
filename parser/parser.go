@@ -39,6 +39,8 @@ var priority = map[token.TokenType]int{
 	token.NOT_EQUAL: EQUALS,
 	token.LT:        LESSGREATER,
 	token.GT:        LESSGREATER,
+	token.LTE:       LESSGREATER,
+	token.GTE:       LESSGREATER,
 	token.PLUS:      SUM,
 	token.MINUS:     SUM,
 	token.SLASH:     PRODUCT,
@@ -84,6 +86,8 @@ func NewParser(lexer *lexer.Lexer) *Parser {
 	parser.registerInfix(token.SLASH, parser.parseInfixExpression)
 	parser.registerInfix(token.LT, parser.parseInfixExpression)
 	parser.registerInfix(token.GT, parser.parseInfixExpression)
+	parser.registerInfix(token.LTE, parser.parseInfixExpression)
+	parser.registerInfix(token.GTE, parser.parseInfixExpression)
 	parser.registerInfix(token.NOT_EQUAL, parser.parseInfixExpression)
 	parser.registerInfix(token.EQUAL, parser.parseInfixExpression)
 	parser.registerInfix(token.LPAREN, parser.parseCallExpression)
@@ -453,7 +457,6 @@ func (p *Parser) parseWhileStatement() *ast.WhileStatement {
 	}
 	p.nextToken()
 	stmt.Body = p.parseBlockStatement()
-	// log.Println("current token", p.currentToken)
 	if p.currentToken.Type != token.RBRACE {
 		p.newError("expected '}'", p.lexer.Line(), p.lexer.Column())
 		return nil

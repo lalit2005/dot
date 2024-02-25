@@ -30,11 +30,11 @@ if (5 < 10) {
 [1, 2];
 {"foo": "bar"};
 
-while (true) {
+while (x >= 5) {
 	  let x = 1;
 }
 
-for (let i = 0; i < 10; i = i + 1) {
+for (let i = 0; i <= 10; i = i + 1) {
 	  let x = 1;
 }
 `
@@ -133,7 +133,9 @@ for (let i = 0; i < 10; i = i + 1) {
 		{token.SEMICOLON, ";"},
 		{token.WHILE, "while"},
 		{token.LPAREN, "("},
-		{token.TRUE, "true"},
+		{token.IDENTIFIER, "x"},
+		{token.GTE, ">="},
+		{token.INTEGER, "5"},
 		{token.RPAREN, ")"},
 		{token.LBRACE, "{"},
 		{token.LET, "let"},
@@ -150,7 +152,7 @@ for (let i = 0; i < 10; i = i + 1) {
 		{token.INTEGER, "0"},
 		{token.SEMICOLON, ";"},
 		{token.IDENTIFIER, "i"},
-		{token.LT, "<"},
+		{token.LTE, "<="},
 		{token.INTEGER, "10"},
 		{token.SEMICOLON, ";"},
 		{token.IDENTIFIER, "i"},

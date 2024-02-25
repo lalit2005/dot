@@ -32,6 +32,8 @@ const (
 	COMMA     = ","
 	LT        = "<"
 	GT        = ">"
+	LTE       = "<="
+	GTE       = ">="
 	BANG      = "!"
 	COLON     = ":"
 	LBRACKET  = "["

@@ -217,20 +217,22 @@ func TestParsingInfixExpressions(t *testing.T) {
 		{"5 < 5;", 5, "<", 5},
 		{"5 == 5;", 5, "==", 5},
 		{"5 != 5;", 5, "!=", 5},
+		{"5 >= 5;", 5, ">=", 5},
+		{"5 <= 5;", 5, "<=", 5},
 		{"true == true", true, "==", true},
 		{"true != false", true, "!=", false},
 		{"false == false", false, "==", false},
 	}
 
-	for _, tt := range infixTests {
+	for i, tt := range infixTests {
 		p, _ := newParser(tt.input)
 		program := p.ParseProgram()
 		for _, e := range p.errors {
 			t.Error("PARSER ERROR: " + e)
 		}
 		if len(program.Statements) != 1 {
-			t.Fatalf("program.Statements does not contain %d statements. got=%d\n",
-				1, len(program.Statements))
+			t.Fatalf("[%d] program.Statements does not contain %d statements. got=%d\n",
+				i, 1, len(program.Statements))
 		}
 
 		stmt, ok := program.Statements[0].(*ast.ExpressionStatement)
@@ -429,12 +431,12 @@ func TestIfExpression(t *testing.T) {
 }
 
 func TestSnippet(t *testing.T) {
-	input := `let a = [1, 2, 3, 4, "asd"];
+	input := `let x = 0;
 
-a[2] = 5;
-
-let asd = 5 + (a[4] = 5);
-100 + a[2];`
+while (x <= 10) {
+    print(x);
+    let x = x + 1;
+};;`
 
 	p, l := newParser(input)
 	program := p.ParseProgram()

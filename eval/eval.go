@@ -224,6 +224,10 @@ func evalIntegerInfixOperation(operator string, l object.Object, r object.Object
 		return getBooleanObject(left < right)
 	case ">":
 		return getBooleanObject(left > right)
+	case "<=":
+		return getBooleanObject(left <= right)
+	case ">=":
+		return getBooleanObject(left >= right)
 	case "==":
 		return getBooleanObject(left == right)
 	case "!=":
