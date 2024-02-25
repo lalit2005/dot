@@ -18,4 +18,4 @@ The following table showcases some of the features that have been implemented in
 | Hashmaps           | Not done | Booleans    | Done   |
 | Functions          | Done     | Floats      | Done   |
 | Control flow       | Done     | Integers    | Done   |
-| Built-in functions | Not done | Expressions | Done   |
+| Built-in functions | Done     | Expressions | Done   |
