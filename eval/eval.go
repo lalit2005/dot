@@ -127,7 +127,19 @@ func Eval(node ast.Node, env *object.Environment, lexer lexer.Lexer) object.Obje
 			if !ok {
 				return newError("identifier not found: "+left.Left.String(), lexer.Line(), lexer.Column())
 			}
-			array := arrayObj.(*object.Array)
+			array, ok := arrayObj.(*object.Array)
+			if !ok {
+				if hashObj, ok := env.Get(left.Left.String()); ok {
+					hash := hashObj.(*object.Hash)
+					key := Eval(left.Index, env, lexer)
+					if key.Type() == object.ERROR_OBJ {
+						return key
+					}
+					hash.Pairs[key.(object.Hashable).HashKey()] = object.HashPair{Key: key, Value: val}
+					return val
+				}
+				return newError(fmt.Sprintf("invalid operation: %s %s %s", arrayObj.Type(), node.Operator, val.Type()), lexer.Line(), lexer.Column())
+			}
 			index := int(Eval(left.Index, env, lexer).(*object.Integer).Value)
 			if index < 0 || index >= len(array.Elements) {
 				return newError("index out of range", lexer.Line(), lexer.Column())

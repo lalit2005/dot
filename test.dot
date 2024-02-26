@@ -1,14 +1,15 @@
-let i = 5;
-let p = 10;
+// let x = {"value": 10}
+// let y = x
+// 
+// x["value"] = 20
+// print(y)
 
-for (let i = 0; i < 10; i += 1) {
-    print(i)
-}
+// let x = [1, 2, 3]
+// let y = x
+// x[0] = 10
+// print(y)
 
-for (let i = 90; i < 100; i += 1) {
-    let p = 5;
-    print(i)
-}
-
-print(i) // 5
-print(p) // 10
+let x = "hello"
+let y = x
+x = "world"
+print(y)

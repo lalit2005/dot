@@ -168,5 +168,5 @@ func (h *Hash) String() string {
 	for _, pair := range h.Pairs {
 		out += pair.Key.String() + ": " + pair.Value.String() + ", "
 	}
-	return "{" + out + "}"
+	return "{ " + out + " }"
 }
