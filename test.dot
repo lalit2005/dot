@@ -1,5 +1,14 @@
-let x = 5
+let i = 5;
+let p = 10;
 
-x = "hello world";
+for (let i = 0; i < 10; i += 1) {
+    print(i)
+}
 
-print(x)
+for (let i = 90; i < 100; i += 1) {
+    let p = 5;
+    print(i)
+}
+
+print(i) // 5
+print(p) // 10

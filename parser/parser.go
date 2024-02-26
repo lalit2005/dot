@@ -198,6 +198,7 @@ func (p *Parser) parseExpressionStatement() ast.Statement {
 }
 
 func (p *Parser) parseLetStatement() *ast.LetStatement {
+	// current token: 'let'
 	p.nextToken()
 	if p.currentToken.Type != token.IDENTIFIER {
 		p.newError("expected identifier after 'let'", p.lexer.Line(), p.lexer.Column())
@@ -492,7 +493,7 @@ func (p *Parser) parseForStatement() *ast.ForStatement {
 	}
 	p.nextToken()
 	expression.Initializer = p.parseStatement()
-	p.nextToken()
+	// after parseStatement, current token is the first token of the next statement and the semicolon is already consumed
 	expression.Condition = p.parseExpression(LOWEST, *p.lexer)
 	p.nextToken()
 	if p.currentToken.Type != token.SEMICOLON {
@@ -501,6 +502,12 @@ func (p *Parser) parseForStatement() *ast.ForStatement {
 	}
 	p.nextToken()
 	expression.Incrementer = p.parseStatement()
+	// p.nextToken()
+	// current token: )
+	if p.currentToken.Type != token.RPAREN {
+		p.newError("expected ')'", p.lexer.Line(), p.lexer.Column())
+		return nil
+	}
 	p.nextToken()
 	// current token: {
 	if p.currentToken.Type != token.LBRACE {
@@ -513,6 +520,7 @@ func (p *Parser) parseForStatement() *ast.ForStatement {
 		p.newError("expected '}'", p.lexer.Line(), p.lexer.Column())
 		return nil
 	}
+	p.nextToken()
 	return expression
 }
 

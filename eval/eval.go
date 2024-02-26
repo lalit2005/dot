@@ -5,13 +5,13 @@ import (
 	"dot/lexer"
 	"dot/object"
 	"fmt"
-	"log"
 )
 
 var (
 	NULL  = &object.Null{}
 	TRUE  = &object.Boolean{Value: true}
 	FALSE = &object.Boolean{Value: false}
+	EMPTY = &object.String{Value: ""}
 )
 
 func Eval(node ast.Node, env *object.Environment, lexer lexer.Lexer) object.Object {
@@ -106,8 +106,7 @@ func Eval(node ast.Node, env *object.Environment, lexer lexer.Lexer) object.Obje
 				ident.(*object.Integer).Value /= val.(*object.Integer).Value
 				return ident
 			}
-		}
-		if node.Operator == "=" {
+		case "=":
 			// reassigning the value of a variable
 			if _, ok := node.Left.(*ast.IndexExpression); !ok {
 				val := Eval(node.Right, env, lexer)
@@ -224,7 +223,6 @@ func Eval(node ast.Node, env *object.Environment, lexer lexer.Lexer) object.Obje
 		return evalIndexExpression(left, index, lexer)
 	case *ast.WhileStatement:
 		condition := Eval(node.Condition, env, lexer)
-		// log.Println(condition)
 		if condition == nil {
 			return nil
 		}
@@ -241,9 +239,32 @@ func Eval(node ast.Node, env *object.Environment, lexer lexer.Lexer) object.Obje
 				return nil
 			}
 		}
-		return NULL
+		return EMPTY
 	case *ast.HashLiteral:
 		return evalHashLiteral(node, env, lexer)
+	case *ast.ForStatement:
+		forLoopEnv := object.NewEnclosedEnvironment(env)
+		Eval(node.Initializer, forLoopEnv, lexer)
+		condition := Eval(node.Condition, forLoopEnv, lexer)
+		if condition == nil {
+			return nil
+		}
+		for condition.String() == "true" {
+			result :=
+				Eval(node.Body, forLoopEnv, lexer)
+			if result != nil {
+				rt := result.Type()
+				if rt == object.RETURN_VALUE_OBJ || rt == object.ERROR_OBJ {
+					return result
+				}
+			}
+			Eval(node.Incrementer, forLoopEnv, lexer)
+			condition = Eval(node.Condition, forLoopEnv, lexer)
+			if condition == nil {
+				return nil
+			}
+		}
+		return EMPTY
 	case *ast.Program:
 		var result object.Object
 		for _, statement := range node.Statements {
@@ -267,7 +288,6 @@ func newError(msg string, line int, column int) *object.Error {
 func evalIntegerInfixOperation(operator string, l object.Object, r object.Object, lexer lexer.Lexer, env object.Environment) object.Object {
 	left := l.(*object.Integer).Value
 	right := r.(*object.Integer).Value
-	log.Println(left, right)
 	switch operator {
 	case "+":
 		return &object.Integer{Value: left + right}

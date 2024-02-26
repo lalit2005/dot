@@ -32,7 +32,7 @@ func main() {
 	// fmt.Println(program.String())
 	env := object.NewEnvironment()
 	evaluated := eval.Eval(program, env, *lexer)
-	fmt.Print(evaluated)
+	fmt.Print(evaluated.String())
 }
 
 func startRepl() {

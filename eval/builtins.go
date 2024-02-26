@@ -102,7 +102,7 @@ var builtins = map[string]*object.Builtin{
 			for _, arg := range args {
 				println(arg.String())
 			}
-			return &object.String{Value: ""}
+			return EMPTY
 		},
 	},
 	"ask": {
