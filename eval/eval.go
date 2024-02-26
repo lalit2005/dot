@@ -107,8 +107,18 @@ func Eval(node ast.Node, env *object.Environment, lexer lexer.Lexer) object.Obje
 				return ident
 			}
 		}
-		// reassigning the value of an element in an array
 		if node.Operator == "=" {
+			// reassigning the value of a variable
+			if _, ok := node.Left.(*ast.IndexExpression); !ok {
+				val := Eval(node.Right, env, lexer)
+				if val == nil {
+					return NULL
+				}
+				env.Set(node.Left.(*ast.Identifier).Value, val)
+				return val
+			}
+
+			// reassigning the value of an element in an array
 			left := node.Left.(*ast.IndexExpression)
 			val := Eval(node.Right, env, lexer)
 			if val == nil {

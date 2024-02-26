@@ -51,6 +51,7 @@ var priority = map[token.TokenType]int{
 	token.BANG:        PREFIX,
 	token.AND:         LOGICAL,
 	token.OR:          LOGICAL,
+	token.ASSIGN:      ASSIGNMENT,
 	token.PLUS_EQUAL:  ASSIGNMENT,
 	token.MINUS_EQUAL: ASSIGNMENT,
 	token.MULT_EQUAL:  ASSIGNMENT,
@@ -101,6 +102,7 @@ func NewParser(lexer *lexer.Lexer) *Parser {
 	parser.registerInfix(token.LBRACKET, parser.parseIndexExpression)
 	parser.registerInfix(token.AND, parser.parseInfixExpression)
 	parser.registerInfix(token.OR, parser.parseInfixExpression)
+	parser.registerInfix(token.ASSIGN, parser.parseInfixExpression)
 	parser.registerInfix(token.PLUS_EQUAL, parser.parseInfixExpression)
 	parser.registerInfix(token.MINUS_EQUAL, parser.parseInfixExpression)
 	parser.registerInfix(token.MULT_EQUAL, parser.parseInfixExpression)
