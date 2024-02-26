@@ -1,9 +1,5 @@
-let x = {
-    "a": 1,
-    "b": 2,
-    "c": 3
-}
+let x = 5
 
-let b = "a";
+x *= 10
 
-print(x[b]);
+print(x)

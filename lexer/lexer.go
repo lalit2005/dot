@@ -20,8 +20,18 @@ func (l *Lexer) NextToken() token.Token {
 	var tok token.Token
 	switch l.currentChar {
 	case '+':
+		if l.peekChar == '=' {
+			l.readChar()
+			l.readChar()
+			return token.Token{Type: token.PLUS_EQUAL, Literal: "+="}
+		}
 		tok = newToken(token.PLUS, l.currentChar)
 	case '-':
+		if l.peekChar == '=' {
+			l.readChar()
+			l.readChar()
+			return token.Token{Type: token.MINUS_EQUAL, Literal: "-="}
+		}
 		tok = newToken(token.MINUS, l.currentChar)
 	case '/':
 		if l.peekChar == '/' {
@@ -32,8 +42,18 @@ func (l *Lexer) NextToken() token.Token {
 			tok = token.Token{Type: token.COMMENT, Literal: l.input[initialPosition:l.currentPosition]}
 			return tok
 		}
+		if l.peekChar == '=' {
+			l.readChar()
+			l.readChar()
+			return token.Token{Type: token.DIV_EQUAL, Literal: "/="}
+		}
 		tok = newToken(token.SLASH, l.currentChar)
 	case '*':
+		if l.peekChar == '=' {
+			l.readChar()
+			l.readChar()
+			return token.Token{Type: token.MULT_EQUAL, Literal: "*="}
+		}
 		tok = newToken(token.ASTERISK, l.currentChar)
 	case ';':
 		tok = newToken(token.SEMICOLON, l.currentChar)

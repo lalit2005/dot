@@ -18,6 +18,7 @@ const (
 	PREFIX
 	CALL
 	INDEX
+	ASSIGNMENT
 )
 
 type Parser struct {
@@ -35,21 +36,25 @@ type (
 )
 
 var priority = map[token.TokenType]int{
-	token.EQUAL:     EQUALS,
-	token.NOT_EQUAL: EQUALS,
-	token.LT:        LESSGREATER,
-	token.GT:        LESSGREATER,
-	token.LTE:       LESSGREATER,
-	token.GTE:       LESSGREATER,
-	token.PLUS:      SUM,
-	token.MINUS:     SUM,
-	token.SLASH:     PRODUCT,
-	token.ASTERISK:  PRODUCT,
-	token.LPAREN:    CALL,
-	token.LBRACKET:  INDEX,
-	token.BANG:      PREFIX,
-	token.AND:       LOGICAL,
-	token.OR:        LOGICAL,
+	token.EQUAL:       EQUALS,
+	token.NOT_EQUAL:   EQUALS,
+	token.LT:          LESSGREATER,
+	token.GT:          LESSGREATER,
+	token.LTE:         LESSGREATER,
+	token.GTE:         LESSGREATER,
+	token.PLUS:        SUM,
+	token.MINUS:       SUM,
+	token.SLASH:       PRODUCT,
+	token.ASTERISK:    PRODUCT,
+	token.LPAREN:      CALL,
+	token.LBRACKET:    INDEX,
+	token.BANG:        PREFIX,
+	token.AND:         LOGICAL,
+	token.OR:          LOGICAL,
+	token.PLUS_EQUAL:  ASSIGNMENT,
+	token.MINUS_EQUAL: ASSIGNMENT,
+	token.MULT_EQUAL:  ASSIGNMENT,
+	token.DIV_EQUAL:   ASSIGNMENT,
 }
 
 func NewParser(lexer *lexer.Lexer) *Parser {
@@ -96,6 +101,10 @@ func NewParser(lexer *lexer.Lexer) *Parser {
 	parser.registerInfix(token.LBRACKET, parser.parseIndexExpression)
 	parser.registerInfix(token.AND, parser.parseInfixExpression)
 	parser.registerInfix(token.OR, parser.parseInfixExpression)
+	parser.registerInfix(token.PLUS_EQUAL, parser.parseInfixExpression)
+	parser.registerInfix(token.MINUS_EQUAL, parser.parseInfixExpression)
+	parser.registerInfix(token.MULT_EQUAL, parser.parseInfixExpression)
+	parser.registerInfix(token.DIV_EQUAL, parser.parseInfixExpression)
 
 	return parser
 }

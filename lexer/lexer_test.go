@@ -37,6 +37,10 @@ while (x >= 5) {
 for (let i = 0; i <= 10; i = i + 1) {
 	  let x = 1;
 }
+
+x += 1;
+x -= 1;
+
 `
 
 	tests := []struct {
@@ -168,6 +172,14 @@ for (let i = 0; i <= 10; i = i + 1) {
 		{token.INTEGER, "1"},
 		{token.SEMICOLON, ";"},
 		{token.RBRACE, "}"},
+		{token.IDENTIFIER, "x"},
+		{token.PLUS_EQUAL, "+="},
+		{token.INTEGER, "1"},
+		{token.SEMICOLON, ";"},
+		{token.IDENTIFIER, "x"},
+		{token.MINUS_EQUAL, "-="},
+		{token.INTEGER, "1"},
+		{token.SEMICOLON, ";"},
 		{token.EOF, ""},
 	}
 

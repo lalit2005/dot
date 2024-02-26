@@ -5,6 +5,7 @@ import (
 	"dot/lexer"
 	"dot/object"
 	"fmt"
+	"log"
 )
 
 var (
@@ -69,6 +70,43 @@ func Eval(node ast.Node, env *object.Environment, lexer lexer.Lexer) object.Obje
 			return newError("unknown operator: "+node.Operator, lexer.Line(), lexer.Column())
 		}
 	case *ast.InfixExpression:
+		switch node.Operator {
+		case "+=", "-=", "*=", "/=":
+			left := node.Left.(*ast.Identifier)
+			val := Eval(node.Right, env, lexer)
+			if val == nil {
+				return nil
+			}
+			ident, ok := env.Get(left.Value)
+			if !ok {
+				return newError("identifier not found: "+left.Value, lexer.Line(), lexer.Column())
+			}
+			if ident.Type() != val.Type() {
+				return newError(fmt.Sprintf("type mismatch: %s node.Operator %s", ident.Type(), val.Type()), lexer.Line(), lexer.Column())
+			}
+			switch node.Operator {
+			case "+=":
+				switch ident := ident.(type) {
+				case *object.Integer:
+					ident.Value += val.(*object.Integer).Value
+					return ident
+				case *object.String:
+					ident.Value += val.(*object.String).Value
+					return ident
+				default:
+					return newError(fmt.Sprintf("invalid operation: %s node.Operator %s", ident.Type(), val.Type()), lexer.Line(), lexer.Column())
+				}
+			case "-=":
+				ident.(*object.Integer).Value -= val.(*object.Integer).Value
+				return ident
+			case "*=":
+				ident.(*object.Integer).Value *= val.(*object.Integer).Value
+				return ident
+			case "/=":
+				ident.(*object.Integer).Value /= val.(*object.Integer).Value
+				return ident
+			}
+		}
 		// reassigning the value of an element in an array
 		if node.Operator == "=" {
 			left := node.Left.(*ast.IndexExpression)
@@ -99,7 +137,7 @@ func Eval(node ast.Node, env *object.Environment, lexer lexer.Lexer) object.Obje
 		}
 		switch {
 		case left.Type() == object.INTEGER_OBJ && right.Type() == object.INTEGER_OBJ:
-			return evalIntegerInfixOperation(node.Operator, left, right, lexer)
+			return evalIntegerInfixOperation(node.Operator, left, right, lexer, *env)
 		case node.Operator == "==":
 			return getBooleanObject(left.String() == right.String())
 		case node.Operator == "&&":
@@ -216,9 +254,10 @@ func newError(msg string, line int, column int) *object.Error {
 	return &object.Error{Message: msg + " - " + fmt.Sprintf("at line %d, column %d", line, column)}
 }
 
-func evalIntegerInfixOperation(operator string, l object.Object, r object.Object, lexer lexer.Lexer) object.Object {
+func evalIntegerInfixOperation(operator string, l object.Object, r object.Object, lexer lexer.Lexer, env object.Environment) object.Object {
 	left := l.(*object.Integer).Value
 	right := r.(*object.Integer).Value
+	log.Println(left, right)
 	switch operator {
 	case "+":
 		return &object.Integer{Value: left + right}
