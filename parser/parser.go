@@ -68,12 +68,6 @@ func NewParser(lexer *lexer.Lexer) *Parser {
 		infixParsers:  make(map[token.TokenType]infixParser),
 	}
 
-	// if the first token is a comment, skip it
-	if parser.currentToken.Type == token.COMMENT {
-		parser.currentToken = parser.peekToken
-		parser.peekToken = lexer.NextToken()
-	}
-
 	parser.registerPrefix(token.BANG, parser.parsePrefixExpression)
 	parser.registerPrefix(token.MINUS, parser.parsePrefixExpression)
 	parser.registerPrefix(token.PLUS, parser.parsePrefixExpression)
@@ -157,6 +151,11 @@ func (p *Parser) parseExpression(precedence int, lexer lexer.Lexer) ast.Expressi
 func (p *Parser) parseStatement() ast.Statement {
 	// current token: first token of statement
 	// the current token after each statement is passed goes to next statement's first token
+
+	for p.currentToken.Type == token.COMMENT { // for skipping multi-line comments
+		p.nextToken()
+	}
+
 	switch p.currentToken.Type {
 	case token.LET:
 		return p.parseLetStatement()
