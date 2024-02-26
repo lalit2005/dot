@@ -271,3 +271,21 @@ func (ie *IndexExpression) expressionNode() {}
 func (ie *IndexExpression) String() string {
 	return fmt.Sprintf("(%s[%s])", ie.Left.String(), ie.Index.String())
 }
+
+type HashLiteral struct {
+	Pairs map[Expression]Expression
+}
+
+func (hl *HashLiteral) expressionNode() {}
+
+func (hl *HashLiteral) String() string {
+	var out bytes.Buffer
+	pairs := []string{}
+	for k, v := range hl.Pairs {
+		pairs = append(pairs, k.String()+": "+v.String())
+	}
+	out.WriteString("{")
+	out.WriteString(strings.Join(pairs, ", "))
+	out.WriteString("}")
+	return out.String()
+}

@@ -431,12 +431,12 @@ func TestIfExpression(t *testing.T) {
 }
 
 func TestSnippet(t *testing.T) {
-	input := `let x = 0;
+	input := `let x = {
+    "a": 3,
+    "b": 2,
+};
 
-while (x <= 10) {
-    print(x);
-    let x = x + 1;
-};;`
+print(x["a"]);`
 
 	p, l := newParser(input)
 	program := p.ParseProgram()

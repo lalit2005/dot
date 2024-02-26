@@ -194,6 +194,8 @@ func Eval(node ast.Node, env *object.Environment, lexer lexer.Lexer) object.Obje
 			}
 		}
 		return NULL
+	case *ast.HashLiteral:
+		return evalHashLiteral(node, env, lexer)
 	case *ast.Program:
 		var result object.Object
 		for _, statement := range node.Statements {
@@ -296,6 +298,8 @@ func evalIndexExpression(left object.Object, index object.Object, lexer lexer.Le
 	switch {
 	case left.Type() == object.ARRAY_OBJ && index.Type() == object.INTEGER_OBJ:
 		return evalArrayIndexExpression(left, index)
+	case left.Type() == object.HASH_OBJ:
+		return evalHashIndexExpression(left, index, lexer)
 	default:
 		return newError((fmt.Sprintf("index operator not supported: %s", left.Type())), lexer.Line(), lexer.Column())
 	}
@@ -309,4 +313,38 @@ func evalArrayIndexExpression(array object.Object, index object.Object) object.O
 		return NULL
 	}
 	return arrayObject.Elements[int(idx)]
+}
+
+func evalHashLiteral(node *ast.HashLiteral, env *object.Environment, lexer lexer.Lexer) object.Object {
+	pairs := make(map[object.HashKey]object.HashPair)
+	for keyNode, valueNode := range node.Pairs {
+		key := Eval(keyNode, env, lexer)
+		if key.Type() == object.ERROR_OBJ {
+			return key
+		}
+		hashKey, ok := key.(object.Hashable)
+		if !ok {
+			return newError(fmt.Sprintf("unusable as hash key: %s", key.Type()), lexer.Line(), lexer.Column())
+		}
+		value := Eval(valueNode, env, lexer)
+		if value.Type() == object.ERROR_OBJ {
+			return value
+		}
+		hashed := hashKey.HashKey()
+		pairs[hashed] = object.HashPair{Key: key, Value: value}
+	}
+	return &object.Hash{Pairs: pairs}
+}
+
+func evalHashIndexExpression(hash object.Object, index object.Object, lexer lexer.Lexer) object.Object {
+	hashObject := hash.(*object.Hash)
+	key, ok := index.(object.Hashable)
+	if !ok {
+		return newError(fmt.Sprintf("unusable as hash key: %s", index.Type()), lexer.Line(), lexer.Column())
+	}
+	pair, ok := hashObject.Pairs[key.HashKey()]
+	if !ok {
+		return NULL
+	}
+	return pair.Value
 }

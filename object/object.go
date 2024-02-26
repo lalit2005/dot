@@ -3,6 +3,7 @@ package object
 import (
 	"dot/ast"
 	"fmt"
+	"hash/fnv"
 )
 
 type ObjectType string
@@ -16,6 +17,7 @@ const (
 	FUNCTION_OBJ     = "FUNCTION"
 	ERROR_OBJ        = "ERROR"
 	ARRAY_OBJ        = "ARRAY"
+	HASH_OBJ         = "HASH"
 )
 
 type Error struct {
@@ -120,3 +122,51 @@ type Builtin struct {
 
 func (b *Builtin) Type() ObjectType { return FUNCTION_OBJ }
 func (b *Builtin) String() string   { return "builtin function" }
+
+type HashKey struct {
+	Type  ObjectType
+	Value uint64
+}
+
+type Hashable interface {
+	HashKey() HashKey
+}
+
+func (i *Integer) HashKey() HashKey {
+	return HashKey{Type: i.Type(), Value: uint64(i.Value)}
+}
+
+func (b *Boolean) HashKey() HashKey {
+	var value uint64
+	if b.Value {
+		value = 1
+	} else {
+		value = 0
+	}
+	return HashKey{Type: b.Type(), Value: value}
+}
+
+func (s *String) HashKey() HashKey {
+	h := fnv.New64a()
+	h.Write([]byte(s.Value))
+	return HashKey{Type: s.Type(), Value: h.Sum64()}
+}
+
+type HashPair struct {
+	Key   Object
+	Value Object
+}
+
+type Hash struct {
+	Pairs map[HashKey]HashPair
+}
+
+func (h *Hash) Type() ObjectType { return HASH_OBJ }
+
+func (h *Hash) String() string {
+	var out string
+	for _, pair := range h.Pairs {
+		out += pair.Key.String() + ": " + pair.Value.String() + ", "
+	}
+	return "{" + out + "}"
+}
